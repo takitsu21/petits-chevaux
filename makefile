@@ -1,4 +1,4 @@
-FILE_OUT = petits-chevaux.o
+FILE_OUT = petits-chevaux.exe
 COMPILE_FILE = main.c
 CFLAGS = -o $(FILE_OUT) -Wall -pedantic
 CC=gcc

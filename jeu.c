@@ -1,82 +1,80 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
 #include "jeu.h"
 
-
 /* jet de dés de 1 à 6 */
-int jet_des (void) {
+int jet_des () {
 	srand(time(NULL));
 	return (rand() % (7 - 1) + 1);
 }
 
+/* convertit la couleur int en char */
 char* int_couleur_to_char (int couleur) {
-	switch (couleur)
-	{
+	switch (couleur) {
 	case 0:
 		return "rouge";
 	case 1:
 		return "bleu";
 	case 2:
-		return "jaune";
-	
-	default:
 		return "vert";
+	case 3:
+		return "jaune";
+	case 4:
+		return "vide";
+	default:
+		return "couleur non definie";
 	}
 }
 
-void affiche_player_stats(Joueur j) {
-	printf("Joueur %s\nCouleur %s\n" \
-	"Chevaux dans l'écurie : %d\n" \
-	"Chevaux total réstant : %d" \
-	, j.nom, int_couleur_to_char(j.couleur), \
-	j.ecurie, j.nb_chevaux_restant);
+/* obtient le nombre de joueurs pour la partie */
+int get_nb_joueurs () {
+	int n;
+	printf("Combien y a t-il de joueurs ? ");
+	scanf("%d", &n);
+	fflush(stdin); 
+	if (n >= 2 && n <= 4) {
+		return n;
+	} else {
+		printf("Reessayer, 2 a 4 joueurs max\n");
+		return get_nb_joueurs();
+	}
 }
 
-void init_game(Joueur j1, Joueur j2, Joueur j3, Joueur j4) {
-	// Joueur j1;
-	// Joueur j2;
-	// Joueur j3;
-	// Joueur j4;
-	
-	printf("Joueur 1\nSaissez votre nom : ");
-	fgets(j1.nom, MAX_NOM, stdin);
-	if (strlen(j1.nom) == 1) {
-		strcpy(j1.nom, "IA1");
+void init_game() {
+	int nb_joueurs = get_nb_joueurs();
+	joueur_t* j1 = init_joueur(ROUGE, 1);
+	joueur_t* j2 = init_joueur(BLEU, 2);
+	joueur_t* j3;
+	joueur_t* j4;
+	if (nb_joueurs == 3) {
+		j3 = init_joueur(VERT, 3);
 	}
-	j1.ecurie = 4;
-	j1.nb_chevaux_restant = 4;
-	j1.couleur = PLAYER1;
-	printf("Joueur 2\nSaissez votre nom : ");
-	fgets(j2.nom, MAX_NOM, stdin);
-	if (strlen(j2.nom) == 1) {
-		strcpy(j2.nom, "IA2");
+	else if (nb_joueurs == 4) {
+		j3 = init_joueur(VERT, 3);
+		j4 = init_joueur(JAUNE, 4);
 	}
-	j2.ecurie = 4;
-	j2.nb_chevaux_restant = 4;
-	j2.couleur = PLAYER2;
-	printf("Joueur 3\nSaissez votre nom : ");
-	fgets(j3.nom, MAX_NOM, stdin);
-	if (strlen(j3.nom) == 1) {
-		strcpy(j3.nom, "IA3");
-	}
-	j3.ecurie = 4;
-	j3.nb_chevaux_restant = 4;
-	j3.couleur = PLAYER3;
-	printf("Joueur 4\nSaissez votre nom : ");
-	fgets(j4.nom, MAX_NOM, stdin);
-	if (strlen(j4.nom) == 1) {
-		strcpy(j4.nom, "IA4");
-	}
-	j4.ecurie = 4;
-	j4.nb_chevaux_restant = 4;
-	j4.couleur = PLAYER4;
-    // }
-
-	printf("%s\n", j1.nom);
-	printf("%s\n", j2.nom);
-	printf("%s\n", j3.nom);
-	printf("%s\n", j4.nom);
-
+	affiche_etat_joueur(j1);
+	affiche_etat_joueur(j2);
+	affiche_etat_joueur(j3);
+	affiche_etat_joueur(j4);
 }
+
+void affiche_etat_joueur(joueur_t* j) {
+	printf("Joueur %s\n", j->nom);
+	printf("Il y a %d chevaux dans votre ecurie\n", j->ecurie);
+	printf("Couleur %s\n", int_couleur_to_char(j->couleur));
+}
+
+/* initialise un joueur */
+joueur_t* init_joueur (int couleur, int i) {
+	char nom_joueur[MAX_NOM];
+	joueur_t* j = (joueur_t*)malloc(sizeof(joueur_t));
+	printf("Nom du joueur %d : ", i);
+	scanf("%[^\n]", nom_joueur);
+	fflush(stdin); /* clean buffer */
+	strcpy(j->nom, nom_joueur);
+	j->ecurie = 4;
+	j->couleur = couleur;
+	return j;
+}
+
+/* affiche le plateau de jeu */
+void affiche_plateau (plateau_t board){}
