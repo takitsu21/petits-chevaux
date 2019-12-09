@@ -1,6 +1,5 @@
 #ifndef _JEU_H
 #define _JEU_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -38,31 +37,31 @@ int jet_des();
 
 joueur_t* init_joueur(int couleur, int i);
 
-char* int_couleur_to_char (int couleur);
+char* int_couleur_to_char(int couleur);
 
-int char_to_couleur (char* s);
+int char_to_couleur(char* s);
 
-void affiche_plateau (plateau_t board);
+void affiche_plateau(plateau_t board);
 
-int check_cheval (plateau_t board, int _case);
+int check_cheval(plateau_t board, int _case);
 
 void init_game();
 
-int is_vide (plateau_t board, int _case);
+int is_vide(plateau_t board, int _case);
 
-void modif_case (plateau_t board, int _case);
+void modif_case(plateau_t board, int _case);
 
-void tour_suivant (plateau_t board);
+void tour_suivant(plateau_t board);
 
-void ajouter_cheval (plateau_t board, joueur_t* j);
+void ajouter_cheval(plateau_t board, joueur_t* j);
 
-void manger_cheval (plateau_t board, joueur_t* j, int _case);
+void manger_cheval(plateau_t board, joueur_t* j, int _case);
 
 void save(plateau_t board, char* path);
 
 plateau_t load(char* path);
 
-int is_win (plateau_t board);
+int is_win(plateau_t board);
 
 void affiche_etat_joueur(joueur_t* j);
 

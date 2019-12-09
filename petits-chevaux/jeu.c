@@ -1,13 +1,13 @@
 #include "jeu.h"
 
-/* jet de dÃ©s de 1 Ã  6 */
-int jet_des () {
+/* jet de dés de 1 à 6 */
+int jet_des() {
 	srand(time(NULL));
 	return (rand() % (7 - 1) + 1);
 }
 
 /* convertit la couleur int en char */
-char* int_couleur_to_char (int couleur) {
+char* int_couleur_to_char(int couleur) {
 	switch (couleur) {
 	case 0:
 		return "rouge";
@@ -25,14 +25,15 @@ char* int_couleur_to_char (int couleur) {
 }
 
 /* obtient le nombre de joueurs pour la partie */
-int get_nb_joueurs () {
+int get_nb_joueurs() {
 	int n;
 	printf("Combien y a t-il de joueurs ? ");
-	scanf("%d", &n);
-	fflush(stdin); 
+	scanf(" %d", &n);
+	fflush(stdin);
 	if (n >= 2 && n <= 4) {
 		return n;
-	} else {
+	}
+	else {
 		printf("Reessayer, 2 a 4 joueurs max\n");
 		return get_nb_joueurs();
 	}
@@ -42,19 +43,22 @@ void init_game() {
 	int nb_joueurs = get_nb_joueurs();
 	joueur_t* j1 = init_joueur(ROUGE, 1);
 	joueur_t* j2 = init_joueur(BLEU, 2);
-	joueur_t* j3;
-	joueur_t* j4;
+	
+	
 	if (nb_joueurs == 3) {
+		joueur_t* j3;
 		j3 = init_joueur(VERT, 3);
 	}
 	else if (nb_joueurs == 4) {
+		joueur_t* j3;
+		joueur_t* j4;
 		j3 = init_joueur(VERT, 3);
 		j4 = init_joueur(JAUNE, 4);
 	}
 	affiche_etat_joueur(j1);
 	affiche_etat_joueur(j2);
-	affiche_etat_joueur(j3);
-	affiche_etat_joueur(j4);
+	
+
 }
 
 void affiche_etat_joueur(joueur_t* j) {
@@ -64,11 +68,12 @@ void affiche_etat_joueur(joueur_t* j) {
 }
 
 /* initialise un joueur */
-joueur_t* init_joueur (int couleur, int i) {
+joueur_t* init_joueur(int couleur, int i) {
 	char nom_joueur[MAX_NOM];
 	joueur_t* j = (joueur_t*)malloc(sizeof(joueur_t));
 	printf("Nom du joueur %d : ", i);
-	scanf("%[^\n]", nom_joueur);
+	scanf(" %[^\n]", nom_joueur);
+	// fgets(nom_joueur, MAX_NOM, stdin);
 	fflush(stdin); /* clean buffer */
 	strcpy(j->nom, nom_joueur);
 	j->ecurie = 4;
@@ -77,4 +82,4 @@ joueur_t* init_joueur (int couleur, int i) {
 }
 
 /* affiche le plateau de jeu */
-void affiche_plateau (plateau_t board){}
+void affiche_plateau(plateau_t board) {}
