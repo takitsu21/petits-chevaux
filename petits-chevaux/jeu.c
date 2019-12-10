@@ -9,20 +9,20 @@ int jet_des() {
 /* convertit la couleur int en char */
 char int_couleur_to_char(int couleur) {
 	switch (couleur) {
-	case 0:
+	case ROUGE:
 		return 'r';
-	case 1:
+	case BLEU:
 		return 'b';
-	case 2:
+	case VERT:
 		return 'v';
-	case 3:
+	case JAUNE:
 		return 'j';
-	case 4:
+	case VIDE:
 		return '.';
 	default:
 		break;
 	}
-	return 'e';
+	return 'e'; // erreur
 }
 
 /* convertit une couleur char en entier*/
@@ -57,19 +57,37 @@ int get_nb_joueurs() {
 	return n;
 }
 
+char* char_to_string(char c) {
+	switch (c)
+	{
+	case 'r':
+		return "rouge";
+	case 'v':
+		return "vert";
+	case 'j':
+		return "jaune";
+	case 'b':
+		return "bleu";
+	default:
+		break;
+	}
+	return "vide";
+}
+
 void init_game() {
 	int nb_joueurs = get_nb_joueurs();
-	joueur_t* j1 = init_joueur(ROUGE, 1);
-	joueur_t* j2 = init_joueur(BLEU, 2);
+	int* array_des = (int*)malloc(sizeof(int) * nb_joueurs);
+	joueur_t* j1 = init_joueur(ROUGE, 1, array_des);
+	joueur_t* j2 = init_joueur(BLEU, 2, array_des);
 	joueur_t* j3 = NULL;
 	joueur_t* j4 = NULL;
-	
+	plateau_t p;
 	if (nb_joueurs == 3) {
-		j3 = init_joueur(VERT, 3);
+		j3 = init_joueur(VERT, 3, array_des);
 	}
 	else if (nb_joueurs == 4) {
-		j3 = init_joueur(VERT, 3);
-		j4 = init_joueur(JAUNE, 4);
+		j3 = init_joueur(VERT, 3, array_des);
+		j4 = init_joueur(JAUNE, 4, array_des);
 	}
 	affiche_etat_joueur(j1);
 	affiche_etat_joueur(j2);
@@ -77,19 +95,36 @@ void init_game() {
 		affiche_etat_joueur(j3);
 	}
 	if (j4 != NULL) {
-		affiche_etat_joueur(j4);
+		affiche_etat_joueur(j4 );
 	}
+	p = init_plateau(nb_joueurs, check_who_start(array_des, nb_joueurs));
+	printf("Joueur %c commence\n", int_couleur_to_char(p.tour));
+	//printf("%d\n", check_who_start(array_des, nb_joueurs));
+	printf("board = %s \n strlen(p.board) = %d\n", p.board, strlen(p.board));
+	system("pause");
+}
+
+int check_who_start(int* des, int nb_joueurs) {
+	int max = 0;
+	int idx = 0;
+	for (int i = 0; i < nb_joueurs; i++) {
+		if (des[i] > max) {
+			max = des[i];
+			idx = i;
+		}
+	}
+	return idx;
 }
 
 /*affiche l'etat du joueur (nom, ecurie, couleur)*/
 void affiche_etat_joueur(joueur_t* j) {
 	printf("Joueur %s\n", j->nom);
 	printf("Il y a %d chevaux dans votre ecurie\n", j->ecurie);
-	printf("Couleur %s\n", int_couleur_to_char(j->couleur));
+	printf("Couleur %c\n", int_couleur_to_char(j->couleur));
 }
 
 /* initialise un joueur */
-joueur_t* init_joueur(int couleur, int i) {
+joueur_t* init_joueur(int couleur, int i, int* array_des) {
 	char nom_joueur[MAX_NOM];
 	joueur_t* j = (joueur_t*)malloc(sizeof(joueur_t));
 	printf("Nom du joueur %d : ", i);
@@ -98,16 +133,19 @@ joueur_t* init_joueur(int couleur, int i) {
 	strcpy(j->nom, nom_joueur);
 	j->ecurie = 4;
 	j->couleur = couleur;
+	j->jet_des = jet_des();
+	array_des[i] = j->jet_des;
 	return j;
 }
 
 /* initialise le plateau de jeu*/
 plateau_t init_plateau(int nb_joueurs, int tour) {
 	plateau_t p;
-	char board[MAX_BOARD];
 	int i = 0;
-	for (; i < MAX_BOARD; i++) {
+	p.board[MAX_BOARD] = '\0';
+	while (p.board[i] != '\0') {
 		p.board[i] = '.';
+		i++;
 	}
 	p.nb_joueurs = nb_joueurs;
 	p.tour = tour;
@@ -117,10 +155,7 @@ plateau_t init_plateau(int nb_joueurs, int tour) {
 /* verifie s'il y a un gagnant*/
 int is_win(plateau_t p) {
 	int convert = char_to_int(p.board[MAX_BOARD-1]);
-	if (convert != VIDE) {
-		return convert;
-	}
-	return 0;
+	return convert != VIDE ? convert : 0;
 }
 
 /* regarde si une case est vide*/
@@ -139,5 +174,46 @@ void modif_case(plateau_t p, int _case, joueur_t j) {
 	p.board[_case] = int_couleur_to_char(j.couleur);
 }
 
+void tour_suivant(plateau_t p) {
+	p.tour += 1 % p.nb_joueurs;
+}
+
+void manger_cheval(plateau_t p, joueur_t* j, joueur_t* j_manger, int _case) {
+	p.board[_case] = int_couleur_to_char(j->couleur);
+	j_manger->ecurie += 1;
+}
+
+int match_case_start(int couleur) {
+	switch (couleur)
+	{
+	case VERT:
+		return V_START;
+	case JAUNE:
+		return J_START;
+	case BLEU:
+		return B_START;
+	case ROUGE:
+		return R_START;
+	default:
+		break;
+	}
+	return VIDE;
+}
+
+void sortie_ecurie(plateau_t p, joueur_t* j) {
+	int _case = match_case_start(j->couleur);
+	p.board[_case] = int_couleur_to_char(j->couleur);
+	j->ecurie -= 1;
+}
+
 /* affiche le plateau de jeu */
-void affiche_plateau(plateau_t p) {}
+void affiche_plateau(plateau_t p) {
+	int space = 6;
+
+}
+
+void save(plateau_t board, char* path) {}
+
+plateau_t load(char* path) {}
+
+void game() {}
