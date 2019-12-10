@@ -25,39 +25,31 @@ typedef struct joueur_s {
     int couleur;
 } joueur_t;
 
-typedef struct cheval_s {
-    int couleur;
-} cheval_t;
-
 typedef struct plateau_s {
-    cheval_t board[MAX_BOARD];
+    char board[MAX_BOARD];
     int tour;
     int nb_joueurs;
 } plateau_t;
 
 int jet_des();
 
+int char_to_int(char c);
+
 joueur_t* init_joueur(int couleur, int i);
 
-cheval_t init_cheval(int couleur);
-
-char* int_couleur_to_char(int couleur);
-
-int char_to_couleur(char* s);
+char int_couleur_to_char(int couleur);
 
 void init_game();
 
-void affiche_plateau(plateau_t board);
+void affiche_plateau(plateau_t p);
 
 int check_cheval(plateau_t p, int _case);
 
-int is_vide(plateau_t board, int _case);
+int is_vide(plateau_t p, int _case);
 
-void modif_case(plateau_t board, int _case);
+void modif_case(plateau_t p, int _case, joueur_t j);
 
 void tour_suivant(plateau_t board);
-
-void ajouter_cheval(plateau_t board, joueur_t* j);
 
 void manger_cheval(plateau_t board, joueur_t* j, int _case);
 
