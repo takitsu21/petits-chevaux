@@ -166,22 +166,57 @@ joueur_t* init_joueur(int couleur, int i, int* array_des) {
 	return j;
 }
 
+int choice() {
+	int n;
+	printf("Faites un choix :\n"\
+		"          [1]Jeter les des\n"\
+		"          [2]Sauvegarder la partie");
+	while (scanf("%d", &n) != 1 && (n != 1 || n != 2)) {
+		while (getchar() != '\n');
+		printf("Choix non valide\nFaites un choix :\n"\
+			"          [1]Jeter les des\n"\
+			"          [2]Sauvegarder la partie");
+	}
+	return n;
+}
+
+void desalloc_ptr(void* ptr) {
+	if (ptr != NULL) {
+		free(ptr);
+	}
+}
+
 /* initialise le plateau de jeu*/
 plateau_t init_plateau(int nb_joueurs, int tour) {
 	plateau_t p;
-	char tmp[] = "####1##2##3##4##5########6########123456X654321########6########5##4##3##2##1####";
-	size_t len_board = strlen(tmp);
-	p.board = malloc(sizeof(char) * len_board);
-	strcpy(p.board, tmp);
-	//p.board = "####1##2##3##4##5########6########123456X654321########6########5##4##3##2##1####";
-	p.nb_joueurs = nb_joueurs;//
+	p.board = (char**)malloc(sizeof(char*) * ROWS);
+	for (int i = 0; i < ROWS; i++) {
+		p.board[i] = (char*)malloc(sizeof(char) * 16);
+	}
+	p.board[0] = "###";
+	p.board[1] = "#1#";
+	p.board[2] = "#2#";
+	p.board[3] = "#3#";
+	p.board[4] = "#4#";
+	p.board[5] = "#5#";
+	p.board[6] = "#######6#######";
+	p.board[7] = "#123456X654321#";
+	p.board[8] = "#######6#######";
+	p.board[9] = "#5#";
+	p.board[10] = "#4#";
+	p.board[11] = "#3#";
+	p.board[12] = "#2#";
+	p.board[13] = "#1#";
+	p.board[14] = "###";
+	p.board[15] = '\0';
+	p.nb_joueurs = nb_joueurs;
 	p.tour = tour;
 	return p;
 }
 
 /* verifie s'il y a un gagnant*/
 int is_win(plateau_t p) {
-	int convert = char_to_int(p.board[MAX_BOARD-1]);
+	int convert = char_to_int(p.board[LEN_BOARD-1]);
 	return convert != VIDE ? convert : 0;
 }
 
@@ -241,14 +276,14 @@ void sortie_ecurie(plateau_t p, joueur_t* j) {
 
 /* affiche le plateau de jeu */
 void affiche_plateau(plateau_t p) {
-	int i = 0;
+	/*int i = 0;
 	int acc_color = 0;
 	int is_open = 0;
-	/*char* color_changer[] = { "\x1B[31m",
+	char* color_changer[] = { "\x1B[31m",
 							  "\x1B[33m",
-							  "\x1B[32m", "\x1B[34m", "\x1B[0m" };*/
+							  "\x1B[32m", "\x1B[34m", "\x1B[0m" };
 	while (p.board[i] != '\0') {
-		/*if (!is_open && isdigit(p.board[i]) && p.board[i] - '0' == 1) {
+		if (!is_open && isdigit(p.board[i]) && p.board[i] - '0' == 1) {
 			is_open = 1;
 			printf("%s", KRED);
 		}
@@ -256,7 +291,7 @@ void affiche_plateau(plateau_t p) {
 			printf("%c ", p.board[i]);
 			is_open = 0;
 			acc_color++;
-		}*/
+		}
 		if (i == 18 || i == 33 || i == 48) {
 			printf("\n");
 		}
@@ -284,7 +319,62 @@ void affiche_plateau(plateau_t p) {
 	printf("\n");
 	//printf("%s", board);
 	//printf("%d", isalpha(board));
-	//printf("%s", board);
+	//printf("%s", board);*/
+	int i = 0;
+	size_t len_prev;
+	while (p.board[i] != '\0') {
+		len_prev = strlen(p.board[i]);
+		if (len_prev == 3) {
+			printf("            ");
+		}
+		for (int j = 0; p.board[i][j] != '\0'; j++) {
+			if (i < 6 && i > 0 && j == 1) {
+				printf("%s%c %s", KRED, p.board[i][j], KNRM);
+			}
+			else if (i == 0 && j == 2) {
+				printf("%s%c %s", KRED, p.board[i][j], KNRM);
+			}
+			else if (i == 6) {
+				if (j == 7) {
+					printf("%s%c %s", KRED, p.board[i][j], KNRM);
+				}
+				else if (j == 0) {
+					printf("%s%c %s", KBLU, p.board[i][j], KNRM);
+				}
+				else {
+					printf("%c ", p.board[i][j]);
+				}
+			}
+			else if (i == 7) {
+				if (j > 0 && j < 7) {
+					printf("%s%c %s", KBLU, p.board[i][j], KNRM);
+				}
+				else if (j > 7 && j < 14) {
+					printf("%s%c %s", KGRN, p.board[i][j], KNRM);
+				}
+				else {
+					printf("%c ", p.board[i][j]);
+				}
+			}
+			else if (i == 8 && j == 14) {
+				printf("%s%c %s", KGRN, p.board[i][j], KNRM);
+			}
+			else if (i == 8 && j == 7) {
+				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
+			}
+			else if (i > 8 && i < 14 && j == 1) {
+				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
+			}
+			else if (i == 14 && j == 0) {
+				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
+			}
+			else {
+				printf("%c ", p.board[i][j]);
+			}
+		}
+		printf("\n");
+		i++;
+	}
 
 }
 

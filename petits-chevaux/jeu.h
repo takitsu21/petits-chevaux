@@ -8,15 +8,14 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_NOM 20
-#define MAX_BOARD 57
-#define MAX_BOARDP 25
+#define LEN_BOARD 82
+#define ROWS 16
 
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
+#define KNRM  "\033[0m"
+#define KRED  "\033[1;31m"
+#define KGRN  "\033[1;32m"
+#define KYEL  "\033[1;33m"
+#define KBLU  "\033[1;34m"
 
 enum couleur_cheval {
     ROUGE,
@@ -51,8 +50,7 @@ typedef struct joueur_s {
 
 
 typedef struct plateau_s {
-    char* board;
-    char boardp[4][6];
+    char** board;
     int tour;
     int nb_joueurs;
 } plateau_t;
@@ -70,6 +68,8 @@ char* char_to_string(char c);
 char int_couleur_to_char(int couleur);
 
 void init_game();
+
+void desalloc_ptr(void* _args);
 
 int check_who_start(int* des, int nb_joueurs);
 
