@@ -1,15 +1,22 @@
 #ifndef _JEU_H
 #define _JEU_H
 /*evite les warnings de securite de VS*/
-// #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_NOM 100
-#define MAX_BOARD 81
+#define MAX_NOM 20
+#define MAX_BOARD 57
+#define MAX_BOARDP 25
+
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
 
 enum couleur_cheval {
     ROUGE,
@@ -26,15 +33,26 @@ enum color_case_start {
     R_START = 42
 };
 
+typedef struct chevaux_s {
+    int C1;
+    int C2;
+    int C3;
+    int C4;
+} chevaux_t;
+
 typedef struct joueur_s {
-    char nom[MAX_NOM];
+    char* nom;
     int ecurie;
     int couleur;
     int jet_des;
+    //chevaux_t chevaux;
 } joueur_t;
 
+
+
 typedef struct plateau_s {
-    char board[MAX_BOARD];
+    char* board;
+    char boardp[4][6];
     int tour;
     int nb_joueurs;
 } plateau_t;
@@ -42,6 +60,8 @@ typedef struct plateau_s {
 int jet_des();
 
 int char_to_int(char c);
+
+char* get_input();
 
 joueur_t* init_joueur(int couleur, int i, int* array_des);
 
@@ -52,6 +72,8 @@ char int_couleur_to_char(int couleur);
 void init_game();
 
 int check_who_start(int* des, int nb_joueurs);
+
+void cls();
 
 void affiche_plateau(plateau_t p);
 

@@ -3,7 +3,11 @@
 /* jet de dés de 1 à 6 */
 int jet_des() {
 	srand(time(NULL));
-	return (rand() % (7 - 1) + 1);
+	return (rand() % 6 + 1);
+}
+
+void cls() {
+	system("cls");
 }
 
 /* convertit la couleur int en char */
@@ -43,16 +47,34 @@ int char_to_int(char c) {
 	return VIDE;
 }
 
+/* Recuperer les input dynamiquement*/
+char* get_input() {
+	char* input = (char*)malloc(sizeof(char));
+	int c;
+	int acc = 0;
+	if (input == NULL) {
+		printf("Erreur d'allocation memoire\n");
+		exit(1);
+	}
+	c = getchar();
+	input = realloc(input, sizeof(char) * acc + 1);
+	input[acc++] = c;
+	while ((c = getchar()) != '\n' && c != EOF) {
+		input = realloc(input, sizeof(char) * acc + 1);
+		input[acc] = c;
+		acc++;
+	}
+	input[acc] = '\0';
+	return input;
+}
+
 /* obtient le nombre de joueurs pour la partie */
 int get_nb_joueurs() {
 	int n;
 	printf("Combien y a t-il de joueurs ? ");
-	scanf(" %d", &n);
-	fflush(stdin);
-	while (n > 4 || n < 2) {
+	while (scanf("%d", &n) != 1) {
+		while (getchar() != '\n');
 		printf("Reessayer, 2 a 4 joueurs max : ");
-		scanf(" %d", &n);
-		fflush(stdin);
 	}
 	return n;
 }
@@ -94,13 +116,20 @@ void init_game() {
 	if (j3 != NULL) {
 		affiche_etat_joueur(j3);
 	}
+	else {
+		// TODO : faire spawn un pnj
+	}
 	if (j4 != NULL) {
 		affiche_etat_joueur(j4 );
 	}
+	else {
+		// TODO : faire spawn un pnj
+	}
 	p = init_plateau(nb_joueurs, check_who_start(array_des, nb_joueurs));
 	printf("Joueur %c commence\n", int_couleur_to_char(p.tour));
-	//printf("%d\n", check_who_start(array_des, nb_joueurs));
-	printf("board = %s \n strlen(p.board) = %d\n", p.board, strlen(p.board));
+	affiche_plateau(p);
+	//printf("board = %s \n strlen(p.board) = %d\n", p.board, strlen(p.board));
+	//cls();
 	system("pause");
 }
 
@@ -125,12 +154,11 @@ void affiche_etat_joueur(joueur_t* j) {
 
 /* initialise un joueur */
 joueur_t* init_joueur(int couleur, int i, int* array_des) {
-	char nom_joueur[MAX_NOM];
 	joueur_t* j = (joueur_t*)malloc(sizeof(joueur_t));
 	printf("Nom du joueur %d : ", i);
-	scanf(" %[^\n]", nom_joueur);
-	fflush(stdin); /* clean buffer */
-	strcpy(j->nom, nom_joueur);
+	char* tmp = get_input();
+	j->nom = (char*)malloc(sizeof(char) * strlen(tmp) + 1);
+	strcpy(j->nom, tmp);
 	j->ecurie = 4;
 	j->couleur = couleur;
 	j->jet_des = jet_des();
@@ -141,13 +169,12 @@ joueur_t* init_joueur(int couleur, int i, int* array_des) {
 /* initialise le plateau de jeu*/
 plateau_t init_plateau(int nb_joueurs, int tour) {
 	plateau_t p;
-	int i = 0;
-	p.board[MAX_BOARD] = '\0';
-	while (p.board[i] != '\0') {
-		p.board[i] = '.';
-		i++;
-	}
-	p.nb_joueurs = nb_joueurs;
+	char tmp[] = "####1##2##3##4##5########6########123456X654321########6########5##4##3##2##1####";
+	size_t len_board = strlen(tmp);
+	p.board = malloc(sizeof(char) * len_board);
+	strcpy(p.board, tmp);
+	//p.board = "####1##2##3##4##5########6########123456X654321########6########5##4##3##2##1####";
+	p.nb_joueurs = nb_joueurs;//
 	p.tour = tour;
 	return p;
 }
@@ -201,14 +228,63 @@ int match_case_start(int couleur) {
 }
 
 void sortie_ecurie(plateau_t p, joueur_t* j) {
-	int _case = match_case_start(j->couleur);
-	p.board[_case] = int_couleur_to_char(j->couleur);
-	j->ecurie -= 1;
+	if (j->ecurie > 0) {
+		int _case = match_case_start(j->couleur);
+		p.board[_case] = int_couleur_to_char(j->couleur);
+		j->ecurie -= 1;
+	}
+	else {
+		printf("Impossible de sortir un cheval car %s n'a plus de chevaux dans son ecurie", j->nom);
+	}
 }
+
 
 /* affiche le plateau de jeu */
 void affiche_plateau(plateau_t p) {
-	int space = 6;
+	int i = 0;
+	int acc_color = 0;
+	int is_open = 0;
+	/*char* color_changer[] = { "\x1B[31m",
+							  "\x1B[33m",
+							  "\x1B[32m", "\x1B[34m", "\x1B[0m" };*/
+	while (p.board[i] != '\0') {
+		/*if (!is_open && isdigit(p.board[i]) && p.board[i] - '0' == 1) {
+			is_open = 1;
+			printf("%s", KRED);
+		}
+		if (is_open && isdigit(p.board[i]) && p.board[i] - '0' == 6) {
+			printf("%c ", p.board[i]);
+			is_open = 0;
+			acc_color++;
+		}*/
+		if (i == 18 || i == 33 || i == 48) {
+			printf("\n");
+		}
+		else if (i % 3 == 0 && (i < 18 || i >= 63)) {
+			printf("\n");
+			printf("            ");
+		}
+		if (i == 2) {
+			printf("%s%c ", KRED, p.board[i]);
+		}
+		else if (i == 78) {
+			printf("%s%c ", KGRN, p.board[i]);
+		}
+		else if (i == 62) {
+			printf("%s%c ", KYEL, p.board[i]);
+		}
+		else if (i == 18) {
+			printf("%s%c ", KBLU, p.board[i]);
+		}
+		else {
+			printf("%s%c ", KNRM, p.board[i]);
+		}
+		i++;
+	}
+	printf("\n");
+	//printf("%s", board);
+	//printf("%d", isalpha(board));
+	//printf("%s", board);
 
 }
 
