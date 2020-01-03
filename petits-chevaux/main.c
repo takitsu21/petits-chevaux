@@ -5,7 +5,7 @@
 
 int main()
 {
-	init_game();
+	game();
 	
 	
 	return EXIT_SUCCESS;
