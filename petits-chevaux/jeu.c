@@ -261,32 +261,6 @@ plateau_t init_plateau(int nb_joueurs, int tour) {
 	}
 	p.vert_f[LEN_BOARD_FINAL - 1] = init_chevaux(BOARD_END, -1, "", "");
 	desalloc_ptr(c);
-	/*plateau_t p;
-	p.board = (char**)malloc(sizeof(char*) * ROWS);
-	for (int i = 0; i < ROWS; i++) {
-		p.board[i] = (char*)malloc(sizeof(char) * COLS);
-	}
-	p.board[0] = "###";
-	p.board[1] = "#1#";
-	p.board[2] = "#2#";
-	p.board[3] = "#3#";
-	p.board[4] = "#4#";
-	p.board[5] = "#5#";
-	p.board[6] = "#######6#######";
-	p.board[7] = "#123456X654321#";
-	p.board[8] = "#######6#######";
-	p.board[9] = "#5#";
-	p.board[10] = "#4#";
-	p.board[11] = "#3#";
-	p.board[12] = "#2#";
-	p.board[13] = "#1#";
-	p.board[14] = "###";
-	p.board[15] = '\0';*/
-	/*p.board = (char*)malloc(sizeof(char) * MAX + 1);
-	for (int i = 0; i < MAX; i++) {
-		p.board[i] = '#';
-	}
-	p.board[MAX] = '\0';*/
 	p.nb_joueurs = nb_joueurs;
 	p.tour = tour;
 	return p;
@@ -356,81 +330,154 @@ void modif_case(plateau_t p, joueur_t* j, int i) {
 
 /* affiche le plateau de jeu */
 void affiche_plateau(plateau_t p) {
-	/*int i = 0;
-	size_t len_prev;
-	while (p.board[i] != '\0') {
-		len_prev = strlen(p.board[i]);
-		if (len_prev == 3) {
-			printf("            ");
-		}
-		for (int j = 0; p.board[i][j] != '\0'; j++) {
-			if (i < 6 && i > 0 && j == 1) {
-				printf("%s%c %s", KRED, p.board[i][j], KNRM);
-			}
-			else if (i == 0 && j == 2) {
-				printf("%s%c %s", KRED, p.board[i][j], KNRM);
-			}
-			else if (i == 6) {
-				if (j == 7) {
-					printf("%s%c %s", KRED, p.board[i][j], KNRM);
-				}
-				else if (j == 0) {
-					printf("%s%c %s", KBLU, p.board[i][j], KNRM);
-				}
-				else {
-					printf("%c ", p.board[i][j]);
-				}
-			}
-			else if (i == 7) {
-				if (j > 0 && j < 7) {
-					printf("%s%c %s", KBLU, p.board[i][j], KNRM);
-				}
-				else if (j > 7 && j < 14) {
-					printf("%s%c %s", KGRN, p.board[i][j], KNRM);
-				}
-				else {
-					printf("%c ", p.board[i][j]);
-				}
-			}
-			else if (i == 8 && j == 14) {
-				printf("%s%c %s", KGRN, p.board[i][j], KNRM);
-			}
-			else if (i == 8 && j == 7) {
-				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
-			}
-			else if (i > 8 && i < 14 && j == 1) {
-				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
-			}
-			else if (i == 14 && j == 0) {
-				printf("%s%c %s", KYEL, p.board[i][j], KNRM);
-			}
-			else {
-				printf("%c ", p.board[i][j]);
-			}
-		}
-		printf("\n");
-		i++;
-	}*/
-	chevaux_t c_idx;
-	int acc = 0;
-	for (int i = 0; p.board[i].couleur != BOARD_END; i++) {
-		c_idx = p.board[i];
-		
-		if (i % 3 == 0) {
-			printf("\n");
-		}
-		//if (( i >= 1 && i <= 5) || )
-		if (strcmp("C1", p.board[i].name_case) == 0) {
-			printf("%s%s%s  ", KRED, c_idx.name_case, KNRM);
-		}
-		else {
-			printf("%s  ", c_idx.name_case);
-		}
+	for (int k = 0; k <= 43; k++) {
+		p.board[k].name_case = "A";
 	}
-	/*for (int i = 0; p.rouge_f[i].couleur != BOARD_END; i++) {
-		c_idx = p.rouge_f[i];
-		printf("%s\n", c_idx.name_case);
-	}*/
+	chevaux_t l_idx;
+	chevaux_t s_idx;
+	int tmp;
+	short is_colored = 0;
+	int show_couleur = 0;
+	int start_idx = 0;
+	int i = 0;
+	int last_idx = LEN_BOARD-2;
+	char* msg = (char*)malloc(sizeof(char) * 3);
+	for (; i < ROWS; i++) {
+		if (i == 0) {
+			printf("                  %s  %s  %s%s%s", p.board[last_idx].name_case, p.board[start_idx].name_case, KRED, p.board[start_idx+1].name_case, KNRM);
+			start_idx++;
+		}
+		else if (i < 6) {
+			printf("                  %s  %s%s%s  %s", p.board[last_idx].name_case, KRED, p.rouge_f[show_couleur].name_case, KNRM, p.board[start_idx + 1].name_case);
+			show_couleur++;
+		}
+		else if (i == 6) {
+			
+			last_idx -= 6;
+			tmp = last_idx;
+			for (int j = 0; j < 15; j++) {
+				if (j == 0) {
+					strcpy(msg, p.board[last_idx].name_case);
+					printf(KBLU "%s  " KNRM, msg);
+					last_idx++;
+					continue;
+				}
+				else if (j < 7) {
+					strcpy(msg, p.board[last_idx].name_case);
+					last_idx++;
+				}
+				else if (j == 7) {
+					strcpy(msg, p.rouge_f[show_couleur].name_case);
+					is_colored = 1;
+				}
+				else {
+					strcpy(msg, p.board[start_idx].name_case);
+					start_idx++;
+				}
+				if (is_colored) {
+					printf(KRED "%s  " KNRM, msg);
+					is_colored = 0;
+				}
+				else {
+					printf("%s  ", msg);
+				}
+				
+			}
+			last_idx = tmp;
+			show_couleur = 0;
+			printf("\n");
+			continue;
+		}
+		else if (i == 7) {
+			
+			for (int j = 0; j < 15; j++) {
+				if (j == 0) {
+					strcpy(msg, p.board[last_idx].name_case);
+					last_idx--;	
+				}
+				else if (j == 14) {
+					strcpy(msg, p.board[start_idx].name_case);
+					start_idx++;
+				}
+				else if (j < 7) {
+					strcpy(msg, p.bleu_f[show_couleur].name_case);
+					is_colored = 1;
+					show_couleur++;
+				}
+				else if (j == 7) {
+					strcpy(msg, "X");
+					show_couleur = 5;
+				}
+				else {
+					strcpy(msg, p.jaune_f[show_couleur].name_case);
+					show_couleur--;
+					printf(KYEL "%s  " KNRM, msg);
+					continue;
+				}
+				if (is_colored) {
+					printf(KBLU "%s  " KNRM, msg);
+					is_colored = 0;
+				}
+				else {
+					printf("%s  ", msg);
+				}
+				
+			}
+			show_couleur = 0;
+			printf("\n");
+			continue;
+		}
+		else if (i == 8) {
+			start_idx += 6;
+			tmp = start_idx;
+			show_couleur = 5;
+			for (int j = 0; j < 15; j++) {
+				if (j < 7) {
+					strcpy(msg, p.board[last_idx].name_case);
+					last_idx--;
+				}
+				else if (j == 7) {
+					strcpy(msg, p.vert_f[show_couleur].name_case);
+					is_colored = 1;
+					show_couleur--;
+				}
+				else if (j == 14) {
+					strcpy(msg, p.board[start_idx].name_case);
+					printf(KYEL "%s  " KNRM, msg);
+					start_idx--;
+					continue;
+				}
+				else {
+					strcpy(msg, p.board[start_idx].name_case);
+					start_idx--;
+				} 
+				
+				if (is_colored) {
+					printf(KGRN "%s  " KNRM, msg);
+					is_colored = 0;
+				}
+				else {
+					printf("%s  ", msg);
+				}
+			}
+			start_idx = tmp;
+			show_couleur = 4;
+			printf("\n");
+			continue;
+		}
+		else if (i == 14) {
+			printf("                  %s%s%s  %s  %s", KGRN, p.board[last_idx].name_case, KNRM, p.board[last_idx].name_case, p.board[start_idx].name_case);
+			
+		}
+		else if (i > 8 && i < 14) {
+			printf("                  %s  %s%s%s  %s", p.board[last_idx].name_case,  KGRN, p.vert_f[show_couleur].name_case, KNRM, p.board[start_idx].name_case);
+			show_couleur--;
+		}
+		start_idx++;
+		last_idx--;
+		printf("\n");
+	}
+	printf("%d %d", last_idx, start_idx);
 }
 
 void save(plateau_t board, char* path) {}
