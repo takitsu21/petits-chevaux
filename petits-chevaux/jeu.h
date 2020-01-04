@@ -9,11 +9,17 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <windows.h>
 
 #define LEN_BOARD 57
 #define LEN_BOARD_FINAL 7
 #define BOARD_END -1
 #define ROWS 15
+
+#define R_EC_SORTIE 1
+#define G_EC_SORTIE 15
+#define Y_EC_SORTIE 29
+#define B_EC_SORTIE 43
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -27,21 +33,17 @@ enum couleur_cheval {
     BLEU,
     VERT,
     JAUNE,
+    WIN
 };
 
-enum color_case_start {
-    V_START = 0,
-    J_START = 14,
-    B_START = 28,
-    R_START = 42
-};
+
 
 /*position des chevaux*/
 typedef struct chevaux_s {
     int couleur;
     int numero;
+    int position;
     char* name_case;
-    char* cli_couleur;
 } chevaux_t;
 
 /*structure d'un joueur*/
@@ -67,23 +69,25 @@ typedef struct plateau_s {
 
 int jet_des();
 
-int char_to_int(char c);
-
 char* get_input();
 
 joueur_t* init_joueur(int couleur, short i, int* array_des);
 
-char* char_to_string(char c);
+int ingame_choice();
+
+chevaux_t init_chevaux(int couleur, int numero, char* name_case);
+
+void print_elems(int n, ...);
+
+int start_choice();
+
+int get_nb_joueurs();
 
 int ingame_choice();
 
-char int_couleur_to_char(int couleur);
+void desalloc_ptrs(void* arg, ...);
 
-chevaux_t init_chevaux(int couleur, int numero, char* Kcouleur, char* name_case);
-
-void desalloc_ptr(void* ptr);
-
-int* process_board_idx(plateau_t p, joueur_t* j, int jet_des, int base_row, int base_col);
+int check_couleur_sortie(int couleur);
 
 int check_who_start(int* des, int nb_joueurs);
 
@@ -91,11 +95,9 @@ void cls();
 
 void affiche_plateau(plateau_t p);
 
-int check_cheval(plateau_t p, int _case);
+int est_mangeable(plateau_t p, joueur_t* j, int num_cheval, int pos_to_go);
 
-int is_vide(plateau_t p, int _case);
-
-void modif_case(plateau_t p, joueur_t* j, int row, int col);
+void modif_case(plateau_t p, joueur_t* j, int num_cheval);
 
 void tour_suivant(plateau_t p);
 
@@ -113,7 +115,6 @@ void sortie_ecurie(plateau_t p, joueur_t* j);
 
 void affiche_etat_joueur(joueur_t* j);
 
-int match_case_start(int couleur);
 
 void game();
 

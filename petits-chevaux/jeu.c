@@ -11,43 +11,6 @@ void cls() {
 	system("cls");
 }
 
-/* convertit la couleur int en char */
-char int_couleur_to_char(int couleur) {
-	switch (couleur) {
-	case ROUGE:
-		return 'r';
-	case BLEU:
-		return 'b';
-	case VERT:
-		return 'v';
-	case JAUNE:
-		return 'j';
-	case VIDE:
-		return '.';
-	default:
-		break;
-	}
-	return 'e'; // erreur
-}
-
-/* convertit une couleur char en entier*/
-int char_to_int(char c) {
-	switch (c)
-	{
-	case 'r':
-		return ROUGE;
-	case 'b':
-		return BLEU;
-	case 'v':
-		return VERT;
-	case 'j':
-		return JAUNE;
-	default:
-		break;
-	}
-	return VIDE;
-}
-
 /*recupere les input dynamiquement*/
 char* get_input() {
 	char* input = (char*)malloc(sizeof(char));
@@ -80,23 +43,6 @@ int get_nb_joueurs() {
 	return n;
 }
 
-char* char_to_string(char c) {
-	switch (c)
-	{
-	case 'r':
-		return "rouge";
-	case 'v':
-		return "vert";
-	case 'j':
-		return "jaune";
-	case 'b':
-		return "bleu";
-	default:
-		break;
-	}
-	return "vide";
-}
-
 void game() {
 	int nb_joueurs = get_nb_joueurs();
 	int* array_des = (int*)malloc(sizeof(int) * nb_joueurs);
@@ -127,10 +73,20 @@ void game() {
 		// TODO : faire spawn un pnj
 	}
 	p = init_plateau(nb_joueurs, check_who_start(array_des, nb_joueurs));
-	printf("Joueur %c commence\n", int_couleur_to_char(p.tour));
-	affiche_plateau(p);
-	//printf("board = %s \n strlen(p.board) = %d\n", p.board, strlen(p.board));
-	//cls();
+	//printf("Joueur %c commence\n", int_couleur_to_char(p.tour));
+	cls();
+	int tmp;
+	//p.board[0] = j1->chevaux[0];
+	//affiche_plateau(p);
+	for (int i = 0; i < 56; i++) {
+		tmp = i;
+		p.board[i] = j2->chevaux[0];
+		printf("%s", KNRM);
+		affiche_plateau(p);
+		p.board[tmp].name_case = KNRM "#  ";
+		Sleep(250);
+		cls();
+	}
 	system("pause");
 }
 
@@ -148,44 +104,34 @@ int check_who_start(int* des, int nb_joueurs) {
 
 /*affiche l'etat du joueur (nom, ecurie, couleur)*/
 void affiche_etat_joueur(joueur_t* j) {
-	printf("Joueur %s\n", j->nom);
+	/*printf("Joueur %s\n", j->nom);
 	printf("Il y a %d chevaux dans votre ecurie\n", j->ecurie);
-	printf("Couleur %c\n", int_couleur_to_char(j->couleur));
+	printf("Couleur %c\n", int_couleur_to_char(j->couleur));*/
 }
 
 /* initialise un joueur */
 joueur_t* init_joueur(int couleur, short i, int* array_des) {
 	joueur_t* j = (joueur_t*)malloc(sizeof(joueur_t));
-	int array_couleur[4] = { ROUGE, BLEU, VERT, JAUNE };
-	char Kcouleur[4][8] = { {KRED}, {KBLU}, {KGRN}, {KYEL} };
-	char* name_cheval = (char*)malloc(sizeof(char) * 3);
-	name_cheval[0] = 'C';
-	name_cheval[2] = '\0';
+	char num_chevaux[4][4] = { {"C1 "}, {"C2 "}, {"C3 "}, {"C4 "} };
 	printf("Nom du joueur %d : ", i);
-	//char* tmp = get_input();
 	j->num_j = i;
 	j->nom = get_input();
-	//j->nom = (char*)malloc(sizeof(char) * strlen(tmp) + 1);
-	//strcpy(j->nom, tmp);
 	j->ecurie = 4;
 	j->couleur = couleur;
 	j->jet_des = jet_des();
 	array_des[i] = j->jet_des;
 	for (int i = 0; i < 4; i++) {
-		name_cheval[1] = (i+1) + '0';
-		init_chevaux(array_couleur[i], i + 1, Kcouleur[i],  name_cheval);
+		j->chevaux[i] = init_chevaux(couleur, i + 1, num_chevaux[i]);
 	}
-	desalloc_ptr(name_cheval);
 	return j;
 }
 
-chevaux_t init_chevaux(int couleur, int numero, char* Kcouleur, char* name_case) {
+chevaux_t init_chevaux(int couleur, int numero, char* name_case) {
 	chevaux_t chevaux;
 	chevaux.couleur = couleur;
 	chevaux.numero = numero;
-	chevaux.cli_couleur = (char*)malloc(sizeof(char) * strlen(Kcouleur));
-	chevaux.name_case = (char*)malloc(sizeof(char) * strlen(name_case));
-	strcpy(chevaux.cli_couleur, Kcouleur);
+	chevaux.position = -1;
+	chevaux.name_case = (char*)malloc(sizeof(char) * strlen(name_case)+1);
 	strcpy(chevaux.name_case, name_case);
 	return chevaux;
 }
@@ -220,119 +166,156 @@ int ingame_choice() {
 	return n;
 }
 
-/* libere l'espace alloue d'un pointeur */
-void desalloc_ptr(void* ptr) {
-	if (ptr != NULL) {
-		free(ptr);
-	}
-}
-
 /* initialise le plateau de jeu*/
 plateau_t init_plateau(int nb_joueurs, int tour) {
 	plateau_t p;
-	char* c = (char*)malloc(sizeof(char) * 2);
-	c[1] = '\0';
+	char cases[7][4] = { {"1  "}, {"2  "}, {"3  "}, {"4  "}, {"5  "}, {"6  "}, {"X  "} };
 	for (int i = 0; i < LEN_BOARD; i++) {
-		p.board[i] = init_chevaux(VIDE, -1, KNRM, "#");
+		p.board[i] = init_chevaux(VIDE, -1, "#  ");
 	}
-	p.board[LEN_BOARD-1] = init_chevaux(BOARD_END, -1, "", "");
+	p.board[LEN_BOARD-1] = init_chevaux(BOARD_END, -1, "");
+	//p.board[1] = init_chevaux(ROUGE, -1, "#  ");
+	//p.board[15] = init_chevaux(JAUNE, -1, "#  ");
+	//p.board[29] = init_chevaux(VERT, -1, "#  ");
+	//p.board[43] = init_chevaux(BLEU, -1, "#  ");
+	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
+		
+		p.rouge_f[i] = init_chevaux(ROUGE, -1, cases[i]);
+	}
+	//p.rouge_f[LEN_BOARD_FINAL-1] = init_chevaux(BOARD_END, -1, "");
 
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		c[0] = (i + 1) + '0';
-		p.rouge_f[i] = init_chevaux(VIDE, -1, KNRM, c);
+		
+		p.vert_f[i] = init_chevaux(VERT, -1, cases[i]);
 	}
-	p.rouge_f[LEN_BOARD_FINAL-1] = init_chevaux(BOARD_END, -1, "", "");
+	//p.bleu_f[LEN_BOARD_FINAL-1] = init_chevaux(BOARD_END, -1, "");
 
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		c[0] = (i + 1) + '0';
-		p.bleu_f[i] = init_chevaux(ROUGE, -1, KRED, c);
+		
+		p.jaune_f[i] = init_chevaux(JAUNE, -1, cases[i]);
 	}
-	p.bleu_f[LEN_BOARD_FINAL-1] = init_chevaux(BOARD_END, -1, "", "");
+	//p.jaune_f[LEN_BOARD_FINAL - 1] = init_chevaux(BOARD_END, -1, "");
 
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		c[0] = (i + 1) + '0';
-		p.jaune_f[i] = init_chevaux(VERT, -1, KYEL, c);
+		
+		p.bleu_f[i] = init_chevaux(BLEU, -1, cases[i]);
 	}
-	p.jaune_f[LEN_BOARD_FINAL - 1] = init_chevaux(BOARD_END, -1, "", "");
+	//p.vert_f[LEN_BOARD_FINAL - 1] = init_chevaux(BOARD_END, -1, "");
 
-	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		c[0] = (i + 1) + '0';
-		p.vert_f[i] = init_chevaux(BLEU, -1, KNRM, c);
-	}
-	p.vert_f[LEN_BOARD_FINAL - 1] = init_chevaux(BOARD_END, -1, "", "");
-	desalloc_ptr(c);
 	p.nb_joueurs = nb_joueurs;
 	p.tour = tour;
 	return p;
 }
 
-
-/* verifie s'il y a un gagnant*/
-/*int is_win(plateau_t p) {
-	int convert = char_to_int(p.board[LEN_BOARD-1]);
-	return convert != VIDE ? convert : 0;
-}
-
-// regarde si une case est vide
-int is_vide(plateau_t p, int _case) {
-	return char_to_int(p.board[_case]) == VIDE;
-}
-
-// regarde s'il y a un cheval a une 
-// case donne si oui, renvoie sa couleur
-int check_cheval(plateau_t p, int _case) {
-	return char_to_int(p.board[_case]);
-}
-
-// 
-
-
 void tour_suivant(plateau_t p) {
 	p.tour += 1 % p.nb_joueurs;
 }
 
-void manger_cheval(plateau_t p, joueur_t* j, joueur_t* j_manger, int _case) {
-	p.board[_case] = int_couleur_to_char(j->couleur);
-	j_manger->ecurie += 1;
+void modif_case(plateau_t p, joueur_t* j, int num_cheval) {
+	p.board[j->chevaux[num_cheval].position + j->jet_des] = j->chevaux[num_cheval];
 }
 
-int match_case_start(int couleur) {
+int est_mangeable(plateau_t p, joueur_t* j, int num_cheval, int pos_to_go) {
+	if (j->couleur != p.board[pos_to_go].couleur) {
+		return 1;
+	}
+	return 0;
+}
+
+void manger_cheval(plateau_t p, joueur_t* j, joueur_t* j_manger, int num_cheval) {
+	int pos_to_go = j->jet_des + j->chevaux[num_cheval].position;
+	if (est_mangeable(p, j, num_cheval, pos_to_go)) {
+		j_manger->ecurie += 1;
+		p.board[pos_to_go] = j->chevaux[num_cheval];
+	}
+	else {
+		printf("Il y a deja un de vos chevaux a cette position relancez les des");
+	}
+}
+
+int check_couleur_sortie(int couleur) {
 	switch (couleur)
 	{
-	case VERT:
-		return V_START;
-	case JAUNE:
-		return J_START;
-	case BLEU:
-		return B_START;
 	case ROUGE:
-		return R_START;
+		return R_EC_SORTIE;
+	case VERT:
+		return G_EC_SORTIE;
+	case JAUNE:
+		return Y_EC_SORTIE;
+	case BLEU:
+		return B_EC_SORTIE;
 	default:
 		break;
 	}
-	return VIDE;
+	return 0;
+}
+
+int is_win(plateau_t p) {
+	if (p.bleu_f[LEN_BOARD_FINAL - 1].numero) {
+		return BLEU;
+	} 
+	else if (p.rouge_f[LEN_BOARD_FINAL - 1].numero) {
+		return ROUGE;
+	}
+	else if (p.vert_f[LEN_BOARD_FINAL - 1].numero) {
+		return VERT;
+	}
+	else if (p.jaune_f[LEN_BOARD_FINAL - 1].numero) {
+		return JAUNE;
+	}
+	return 0;
 }
 
 void sortie_ecurie(plateau_t p, joueur_t* j) {
-	if (j->ecurie > 0) {
-		int _case = match_case_start(j->couleur);
-		p.board[_case] = int_couleur_to_char(j->couleur);
+	if (j->ecurie) {
+		modif_case(p, j, check_couleur_sortie(j->couleur));
 		j->ecurie -= 1;
+
 	}
 	else {
 		printf("Impossible de sortir un cheval car %s n'a plus de chevaux dans son ecurie", j->nom);
 	}
-}*/
-void modif_case(plateau_t p, joueur_t* j, int i) {
-	strcpy(p.board[i].name_case, j->chevaux[i].name_case);
 }
 
+void print_elems(int n, ...) {
+	va_list ap;
+	chevaux_t i;
+
+	va_start(ap, n);
+	while (n--) {
+		i = va_arg(ap, chevaux_t);
+		if (i.couleur == ROUGE) {
+			printf(KRED "%s" KNRM, i.name_case);
+		}
+		else if (i.couleur == VERT) {
+			printf(KGRN "%s" KNRM, i.name_case);
+		}
+		else if (i.couleur == BLEU) {
+			printf(KBLU "%s" KNRM, i.name_case);
+		}
+		else if (i.couleur == JAUNE) {
+			printf(KYEL "%s" KNRM, i.name_case);
+		}
+		else {
+			printf(KNRM "%s", i.name_case);
+		}	
+	}
+	va_end(ap);
+}
+
+void desalloc_ptrs(void* arg, ...) {
+	va_list args;
+	void* element;
+	free(arg);
+	va_start(args, arg);
+	while ((element = va_arg(args, void*)) != NULL) {
+		free(element);
+	}
+	va_end(args);
+}
 
 /* affiche le plateau de jeu */
 void affiche_plateau(plateau_t p) {
-	for (int k = 0; k <= 43; k++) {
-		p.board[k].name_case = "A";
-	}
 	chevaux_t l_idx;
 	chevaux_t s_idx;
 	int tmp;
@@ -341,85 +324,69 @@ void affiche_plateau(plateau_t p) {
 	int start_idx = 0;
 	int i = 0;
 	int last_idx = LEN_BOARD-2;
-	char* msg = (char*)malloc(sizeof(char) * 3);
 	for (; i < ROWS; i++) {
+		//ligne 0 (premiere)
 		if (i == 0) {
-			printf("                  %s  %s  %s%s%s", p.board[last_idx].name_case, p.board[start_idx].name_case, KRED, p.board[start_idx+1].name_case, KNRM);
+			printf("                  ");
+			print_elems(3, p.board[last_idx], p.board[start_idx], p.board[start_idx + 1]);
 			start_idx++;
 		}
+		//ligne 6 
 		else if (i < 6) {
-			printf("                  %s  %s%s%s  %s", p.board[last_idx].name_case, KRED, p.rouge_f[show_couleur].name_case, KNRM, p.board[start_idx + 1].name_case);
+			printf("                  ");
+			print_elems(3, p.board[last_idx], p.rouge_f[show_couleur], p.board[start_idx]);
 			show_couleur++;
 		}
 		else if (i == 6) {
-			
+
 			last_idx -= 6;
 			tmp = last_idx;
 			for (int j = 0; j < 15; j++) {
 				if (j == 0) {
-					strcpy(msg, p.board[last_idx].name_case);
-					printf(KBLU "%s  " KNRM, msg);
+					print_elems(1, p.board[last_idx]);
 					last_idx++;
 					continue;
 				}
 				else if (j < 7) {
-					strcpy(msg, p.board[last_idx].name_case);
+					print_elems(1, p.board[last_idx]);
 					last_idx++;
 				}
 				else if (j == 7) {
-					strcpy(msg, p.rouge_f[show_couleur].name_case);
-					is_colored = 1;
+					print_elems(1, p.rouge_f[show_couleur]);
 				}
 				else {
-					strcpy(msg, p.board[start_idx].name_case);
+					print_elems(1, p.board[start_idx]);
 					start_idx++;
 				}
-				if (is_colored) {
-					printf(KRED "%s  " KNRM, msg);
-					is_colored = 0;
-				}
-				else {
-					printf("%s  ", msg);
-				}
-				
 			}
-			last_idx = tmp;
+			last_idx = tmp - 1;
 			show_couleur = 0;
 			printf("\n");
 			continue;
 		}
+		// ligne 7
 		else if (i == 7) {
 			
 			for (int j = 0; j < 15; j++) {
 				if (j == 0) {
-					strcpy(msg, p.board[last_idx].name_case);
+					print_elems(1, p.board[last_idx]);
 					last_idx--;	
 				}
 				else if (j == 14) {
-					strcpy(msg, p.board[start_idx].name_case);
+					print_elems(1, p.board[start_idx]);
 					start_idx++;
 				}
 				else if (j < 7) {
-					strcpy(msg, p.bleu_f[show_couleur].name_case);
-					is_colored = 1;
+					print_elems(1, p.bleu_f[show_couleur]);
 					show_couleur++;
 				}
 				else if (j == 7) {
-					strcpy(msg, "X");
+					printf("X  ");
 					show_couleur = 5;
 				}
 				else {
-					strcpy(msg, p.jaune_f[show_couleur].name_case);
+					print_elems(1, p.jaune_f[show_couleur]);
 					show_couleur--;
-					printf(KYEL "%s  " KNRM, msg);
-					continue;
-				}
-				if (is_colored) {
-					printf(KBLU "%s  " KNRM, msg);
-					is_colored = 0;
-				}
-				else {
-					printf("%s  ", msg);
 				}
 				
 			}
@@ -427,57 +394,48 @@ void affiche_plateau(plateau_t p) {
 			printf("\n");
 			continue;
 		}
+		//ligne 8
 		else if (i == 8) {
 			start_idx += 6;
 			tmp = start_idx;
 			show_couleur = 5;
 			for (int j = 0; j < 15; j++) {
 				if (j < 7) {
-					strcpy(msg, p.board[last_idx].name_case);
+					print_elems(1, p.board[last_idx]);
 					last_idx--;
 				}
 				else if (j == 7) {
-					strcpy(msg, p.vert_f[show_couleur].name_case);
-					is_colored = 1;
+					print_elems(1, p.vert_f[show_couleur]);
 					show_couleur--;
 				}
 				else if (j == 14) {
-					strcpy(msg, p.board[start_idx].name_case);
-					printf(KYEL "%s  " KNRM, msg);
+					print_elems(1, p.board[start_idx]);
 					start_idx--;
-					continue;
 				}
 				else {
-					strcpy(msg, p.board[start_idx].name_case);
+					print_elems(1, p.board[start_idx]);
 					start_idx--;
 				} 
-				
-				if (is_colored) {
-					printf(KGRN "%s  " KNRM, msg);
-					is_colored = 0;
-				}
-				else {
-					printf("%s  ", msg);
-				}
 			}
-			start_idx = tmp;
+			start_idx = tmp + 1;
 			show_couleur = 4;
 			printf("\n");
 			continue;
 		}
+		//ligne 14 (derniere)
 		else if (i == 14) {
-			printf("                  %s%s%s  %s  %s", KGRN, p.board[last_idx].name_case, KNRM, p.board[last_idx].name_case, p.board[start_idx].name_case);
-			
+			printf("                  ");
+			print_elems(3, p.board[last_idx], p.board[start_idx + 1], p.board[start_idx]);
 		}
 		else if (i > 8 && i < 14) {
-			printf("                  %s  %s%s%s  %s", p.board[last_idx].name_case,  KGRN, p.vert_f[show_couleur].name_case, KNRM, p.board[start_idx].name_case);
+			printf("                  ");
+			print_elems(3, p.board[last_idx], p.vert_f[show_couleur], p.board[start_idx]);
 			show_couleur--;
 		}
 		start_idx++;
 		last_idx--;
 		printf("\n");
 	}
-	printf("%d %d", last_idx, start_idx);
 }
 
 void save(plateau_t board, char* path) {}
