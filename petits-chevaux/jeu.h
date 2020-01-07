@@ -53,19 +53,23 @@ typedef struct chevaux_s {
     int couleur;
     int numero;
     int position;
+    int pos_pyrd;
     char* name_case;
+    int num_j;
 } chevaux_t;
 
 /*structure d'un joueur*/
 typedef struct joueur_s {
-    short num_j;
+    int num_j;
     char* nom;
     int ecurie;
     int couleur;
     int jet_des;
     int sortie_pos;
     int on_board;
-    chevaux_t tmp_case;
+    int is_pnj;
+    chevaux_t pyrd[LEN_BOARD_FINAL];
+    chevaux_t tmp_case[4];
     chevaux_t chevaux[4];
 } joueur_t;
 
@@ -81,18 +85,16 @@ typedef struct plateau_s {
 
 int jet_des();
 char* get_input();
-joueur_t* init_joueur(int couleur, short i, int* array_des, int sortie_pos);
+joueur_t* init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj);
 void affiche_etat_joueur(joueur_t* j);
 int ingame_choice();
 int is_collide(plateau_t* p, chevaux_t* horse, int pos);
 void print_ecuries(joueur_t* j);
-void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t* horse, joueur_t* j_eat, int pos);
-int choose_cheval(joueur_t* j);
+void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos); int choose_cheval(joueur_t* j);
 chevaux_t* horses_in_ecurie(joueur_t* j);
 int choose_cheval_ecurie(joueur_t* j);
 chevaux_t* horses_on_board(joueur_t* j);
-chevaux_t init_chevaux(int couleur, int numero, char* name_case);
-int has_horse_outside(joueur_t* j);
+chevaux_t init_chevaux(int couleur, int numero, char* name_case, int num_j);
 void print_elems(int n, ...);
 int start_choice();
 void start_ascii();
@@ -112,8 +114,7 @@ plateau_t init_plateau(int nb_joueurs, joueur_t* tour);
 int if_6();
 int is_win(plateau_t p);
 joueur_t* get_joueur_by_couleur(int _couleur, joueur_t* j1, joueur_t* j2, joueur_t* j3, joueur_t* j4);
-void sortie_ecurie(plateau_t* p, joueur_t* j);
-void affiche_etat_joueur(joueur_t* j);
+void sortie_ecurie(plateau_t* p, joueur_t* j, chevaux_t horse, joueur_t* j_eat, int pos); void affiche_etat_joueur(joueur_t* j);
 void game();
 
 #endif
