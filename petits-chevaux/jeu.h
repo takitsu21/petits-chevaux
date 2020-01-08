@@ -1,9 +1,9 @@
 #ifndef _JEU_H
 #define _JEU_H
 /*evite les warnings de securite de VS*/
-#ifdef _MSC_VER
+/*#ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
-#endif
+#endif*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -107,9 +107,8 @@ void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int po
 void cls();
 int choice_replay();
 void affiche_plateau(plateau_t p, joueur_t* j);
-void tour_suivant(plateau_t p);
-void save(plateau_t board, char* path);
-plateau_t load(char* path);
+void save(plateau_t* board, joueur_t* j);
+void load();
 plateau_t init_plateau(int nb_joueurs, joueur_t* tour);
 int if_6();
 int is_win(plateau_t p);
