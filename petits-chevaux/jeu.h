@@ -82,9 +82,14 @@ typedef struct plateau_s {
     int nb_joueurs;
 } plateau_t;
 
+typedef struct Game_s {
+    joueur_t* joueurs;
+    plateau_t p;
+} Game_t;
+
 int jet_des();
 char* get_input();
-joueur_t* init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj);
+void init_joueur(joueur_t* j, int couleur, int num_j, int sortie_pos, int is_pnj);
 void affiche_etat_joueur(joueur_t* j);
 int ingame_choice();
 int is_collide(plateau_t p, chevaux_t horse, int pos);
@@ -103,7 +108,7 @@ void desalloc_ptrs(void* arg, ...);
 int check_couleur_sortie(int couleur);
 void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen, joueur_t* j_eat, int pos);
 void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen);
-joueur_t* check_who_start(joueur_t** des, int nb_joueurs);
+joueur_t* check_who_start(joueur_t* joueurs, int nb_joueurs);
 void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int pos, chevaux_t tmp);
 void cls();
 int choice_replay();
@@ -114,9 +119,7 @@ void load_joueurs();
 plateau_t init_plateau(int nb_joueurs, joueur_t* tour);
 int if_6();
 int is_win(plateau_t p);
-joueur_t* get_joueur_by_couleur(int _couleur, joueur_t* j1, joueur_t* j2, joueur_t* j3, joueur_t* j4);
-//void sortie_ecurie(plateau_t* p, joueur_t* j, chevaux_t horse, joueur_t* j_eat, int pos); void affiche_etat_joueur(joueur_t* j);
-void sortie_ecurie_s(plateau_t* p, joueur_t* j, joueur_t* j_eat);
+void sortie_ecurie(plateau_t* p, joueur_t* j, joueur_t* j_eat);
 void game2();
 
 #endif
