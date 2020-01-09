@@ -44,6 +44,7 @@ enum ingame_mode {
 
 enum mode {
     NEW_GAME = 1,
+    SAVE_S,
     LOAD,
     QUIT
 };
@@ -68,7 +69,6 @@ typedef struct joueur_s {
     int sortie_pos;
     int on_board;
     int is_pnj;
-    chevaux_t pyrd[LEN_BOARD_FINAL];
     chevaux_t tmp_case[4];
     chevaux_t chevaux[4];
 } joueur_t;
@@ -79,7 +79,6 @@ typedef struct plateau_s {
     chevaux_t bleu_f[LEN_BOARD_FINAL];
     chevaux_t jaune_f[LEN_BOARD_FINAL];
     chevaux_t vert_f[LEN_BOARD_FINAL];
-    joueur_t* tour;
     int nb_joueurs;
 } plateau_t;
 
@@ -88,7 +87,7 @@ char* get_input();
 joueur_t* init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj);
 void affiche_etat_joueur(joueur_t* j);
 int ingame_choice();
-int is_collide(plateau_t* p, chevaux_t* horse, int pos);
+int is_collide(plateau_t p, chevaux_t horse, int pos);
 void print_ecuries(joueur_t* j);
 void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos); int choose_cheval(joueur_t* j);
 chevaux_t* horses_in_ecurie(joueur_t* j);
@@ -102,18 +101,22 @@ int get_nb_joueurs();
 int ingame_choice();
 void desalloc_ptrs(void* arg, ...);
 int check_couleur_sortie(int couleur);
+void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen, joueur_t* j_eat, int pos);
+void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen);
 joueur_t* check_who_start(joueur_t** des, int nb_joueurs);
 void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int pos, chevaux_t tmp);
 void cls();
 int choice_replay();
-void affiche_plateau(plateau_t p, joueur_t* j);
-void save(plateau_t* board, joueur_t* j);
-void load();
+void affiche_plateau(plateau_t p, joueur_t* j, chevaux_t horse);
+void save(plateau_t board, joueur_t** joueurs);
+void load_plateau();
+void load_joueurs();
 plateau_t init_plateau(int nb_joueurs, joueur_t* tour);
 int if_6();
 int is_win(plateau_t p);
 joueur_t* get_joueur_by_couleur(int _couleur, joueur_t* j1, joueur_t* j2, joueur_t* j3, joueur_t* j4);
-void sortie_ecurie(plateau_t* p, joueur_t* j, chevaux_t horse, joueur_t* j_eat, int pos); void affiche_etat_joueur(joueur_t* j);
-void game();
+//void sortie_ecurie(plateau_t* p, joueur_t* j, chevaux_t horse, joueur_t* j_eat, int pos); void affiche_etat_joueur(joueur_t* j);
+void sortie_ecurie_s(plateau_t* p, joueur_t* j, joueur_t* j_eat);
+void game2();
 
 #endif
