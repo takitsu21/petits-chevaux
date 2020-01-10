@@ -1,16 +1,14 @@
 #include "jeu.h"
-/* jet de d�s de 1 � 6 */
+/* jet de des de 1 a 6 */
 int jet_des() {
 	srand(time(NULL));
-	int my_rand = rand() % 6 + 1;
-	//printf("Vous avez fait %d avec le des", my_rand);
-	return (my_rand);
+	return rand() % 6 + 1;
 }
-/*nettoie le terminal*/
+/* nettoie le terminal*/
 void cls() {
 	system("cls");
 }
-/*recupere les input dynamiquement*/
+/*recupere les input */
 char* get_input() {
 	int c;
 	char* input = (char*)malloc(sizeof(char) * MAX_NAME);
@@ -19,9 +17,6 @@ char* get_input() {
 		cls();
 		start_ascii();
 		printf("Erreur, reessayer : ");
-	}
-	if (input) {
-		input[MAX_NAME - 1] = '\0';
 	}
 	return input;
 }
@@ -37,43 +32,44 @@ int get_nb_joueurs() {
 	}
 	return n;
 }
+/* choix du tout debut de la partie */
 int start_choice() {
 	int n;
 	printf("Bienvenue dans le jeu des petits chevaux\nChoississez parmis les 3 propositions suivantes :\n"\
-		"          [1] Nouvelle partie\n"\
-		"          [2] Charger une partie\n"
-		"          [3] Quitter\n");
+		"\t[1] Nouvelle partie\n"\
+		"\t[2] Quitter\n");
 	printf("Choix : ");
-	while (scanf(" %d", &n) != 1 || !(n >= 1 && n <= 3) == 1) {
+	while (scanf(" %d", &n) != 1 || !(n >= 1 && n <= 2) == 1) {
 		while (getchar() != '\n');
 		cls();
 		start_ascii();
 		printf("Choix non valide\nFaites un choix :\n"\
-			"          [1] Nouvelle partie\n"\
-			"          [2] Charger une partie\n"
-			"          [3] Quitter\n");
+			"\t[1] Nouvelle partie\n"\
+			"\t[2] Quitter\n");
 		printf("Choix :");
 	}
 	return n;
 }
+/* choix quand le joueur doit rejouer */
 int choice_replay() {
 	int n;
 	printf("Encore a vous ! Vous avez fait 6\n");
 	printf("Faites un choix :\n"\
-		"          [1] Sortie cheval de l'ecurie\n"\
-		"          [2] Avancer de 6 un de vos chevaux\n"\
-		"          [3] Sauvegarder la partie\nChoix : ");
+		"\t[1] Sortie cheval de l'ecurie\n"\
+		"\t[2] Avancer de 6 un de vos chevaux\n"\
+		"\t[3] Sauvegarder la partie\nChoix : ");
 	while (scanf(" %d", &n) != 1 || !(n > 0 && n < 4) == 1) {
 		while (getchar() != '\n');
 		cls();
 		start_ascii();
 		printf("Choix non valide\nFaites un choix :\n"\
-			"          [1] Sortie cheval de l'ecurie\n"\
-			"          [2] Avancer de 6 un de vos chevaux\n"\
-			"          [3] Sauvegarder la partie\nChoix : ");
+			"\t[1] Sortie cheval de l'ecurie\n"\
+			"\t[2] Avancer de 6 un de vos chevaux\n"\
+			"\t[3] Sauvegarder la partie\nChoix : ");
 	}
 	return n;
 }
+/* affiche petit chevaux en ascii art */
 void start_ascii() {
 	printf("______    _   _ _          _                                \n");
 	printf("| ___ \\  | | (_| |        | |                               \n");
@@ -82,20 +78,13 @@ void start_ascii() {
 	printf("| | |  __| |_| | |_  | (__| | | |  __/\\ V | (_| | |_| |>  < \n");
 	printf("\\_|  \\___|\\__|_|\\__|  \\___|_| |_|\\___| \\_/ \\__,_|\\__,_/_/\\_\\\n\n");
 }
-int has_horse_outside(joueur_t* j) {
-	for (int i = 0; i < 4; i++) {
-		if (j->chevaux[i].position != -1) {
-			return 1;
-		}
-	}
-	return 0;
-}
+/* tout les chevaux du joueur qui sont sur le plateau */
 chevaux_t* horses_on_board(joueur_t* j) {
 	chevaux_t* horses_outside = NULL;
 	int count = 0;
 	for (int i = 0; i < 4; i++) {
 		if (j->chevaux[i].position != -1) {
-			horses_outside = realloc(horses_outside, (count + 1) * sizeof(chevaux_t));
+			horses_outside = (chevaux_t*)realloc(horses_outside, (count + 1) * sizeof(chevaux_t));
 			horses_outside[count] = j->chevaux[i];
 			count++;
 		}
@@ -105,19 +94,20 @@ chevaux_t* horses_on_board(joueur_t* j) {
 	}
 	return NULL;
 }
+/* choisie un cheval disponible sur le plateau */
 int choose_cheval(joueur_t* j) {
 	int n;
 	chevaux_t* horses_available = horses_on_board(j);
 	printf("Choississez votre cheval a utiliser :\n");
 	for (int i = 0; i < j->on_board; i++) {
-		printf("		[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
+		printf("\t[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
 	}
 	printf("Choix : ");
 	while (scanf(" %d", &n) != 1 || is_valid_input(horses_available, n, 4) != 1) {
 		while (getchar() != '\n');
 		printf("Choississez votre cheval a utiliser :\n");
 		for (int i = 0; i < j->on_board; i++) {
-			printf("		[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
+			printf("\t[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
 		}
 		printf("Choix : ");
 	}
@@ -236,6 +226,7 @@ void sortie_ecurie(plateau_t* p, joueur_t* j, joueur_t* j_eat) {
 		printf("Vous avez deja un cheval a cette position\n");
 	}
 }
+/* mange un cheval ennemie */
 void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos) {
 	chevaux_t old_case = current_joueur->tmp_case[horse.numero - 1];
 	int old_pos = horse.position;
@@ -270,8 +261,6 @@ int new_pos_backward(joueur_t* j, int pos) {
 		pos += 56;
 	}
 	new_pos = first_stair - (pos - first_stair);
-	//printf("new_pos back = %d\n", new_pos);
-	//system("pause");
 	return new_pos;
 }
 /*0 si elligible a monter, 1 si superieur au 1er escalier, -1 si inferieur*/
@@ -296,12 +285,14 @@ int is_elligible_prd(joueur_t* j, chevaux_t horse, int pos) {
 	}
 	return -1; // inferieur avance normalement
 }
+/* deplace un cheval */
 void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int pos, chevaux_t tmp) {
 	p->board[pos] = current_joueur->chevaux[horse->numero - 1];
 	p->board[horse->position] = current_joueur->tmp_case[horse->numero - 1];
 	current_joueur->tmp_case[horse->numero - 1] = tmp;
 	current_joueur->chevaux[horse->numero - 1].position = pos;
 }
+/* si le cheval a fait un tour complet retourne en arriere du nombre de cases restant > au tour complet */
 void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos) {
 	chevaux_t tmp;
 	if (horse.position == new_pos_backward(current_joueur, pos)) { //reste au meme endroit
@@ -325,6 +316,7 @@ void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* 
 		}
 	}
 }
+/* demande a l'utilisateur si un joueur est un pnj*/
 int is_pnj() {
 	int n;
 	printf("Ce joueur sera-t-il un pnj ?\n"\
@@ -357,6 +349,7 @@ chevaux_t get_board_f_by_couleur(int couleur, plateau_t p) {
 		break;
 	}
 }
+/* deplace un cheval sur sa pyramide */
 void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t horse) {
 	int old_pyrd;
 	chevaux_t tmp;
@@ -475,6 +468,7 @@ void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t horse) {
 		}
 	}
 }
+/* regarde si un cheval se collisionne avec un autre cheval de son equipe */
 int is_collide_prd(plateau_t p, chevaux_t horse) {
 	switch (horse.couleur) {
 	case ROUGE:
@@ -489,6 +483,7 @@ int is_collide_prd(plateau_t p, chevaux_t horse) {
 		break;
 	}
 }
+/* gere les IAs du jeu */
 void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 	joueur_t* j_manger;
 	chevaux_t tmp;
@@ -496,7 +491,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 	int actual_pos;
 	int out_or_play;
 	current_joueur->jet_des = jet_des();
-	//printf("%d", joueurs[0]->couleur);
 	if (current_joueur->on_board > 0) {
 		if (is_6(current_joueur) && p->board[current_joueur->sortie_pos].position == -1) {
 			srand(time(NULL));
@@ -523,10 +517,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 							else if (is_collide(*p, horse, actual_pos) == 0) {
 								go_back(&p, current_joueur, horse, NULL, actual_pos);
 							}
-							else {
-								// case allie
-								//continue;
-							}
 						}
 					}
 					else if (is_collide(*p, horse, actual_pos) == -1) {
@@ -551,10 +541,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 								else if (is_collide(*p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
 								}
-								else {
-									// case allie
-									//continue;
-								}
 							}
 						}
 					}
@@ -574,10 +560,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(p, current_joueur, horse, NULL, actual_pos);
 					}
-					else {
-						// case allie
-						//continue;
-					}
 				}
 			}
 			else {
@@ -590,10 +572,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						move_horse(&p, &horse, current_joueur, actual_pos, p->board[actual_pos]);
 					}
-					else {
-						//
-						//continue;
-					}
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 					move_prd(&p, current_joueur, horse);
@@ -606,12 +584,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(&p, current_joueur, horse, NULL, actual_pos);
-					}
-					else {
-						// case allie
-						//continue;
-						//printf("Case allie reesayer");
-						//continue;
 					}
 				}
 				current_joueur->jet_des = jet_des();
@@ -624,10 +596,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						move_horse(&p, &horse, current_joueur, actual_pos, p->board[actual_pos]);
 					}
-					else {
-						//
-						//continue;
-					}
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 					move_prd(&p, current_joueur, horse);
@@ -640,10 +608,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(&p, current_joueur, horse, NULL, actual_pos);
-					}
-					else {
-						// case allie
-						//continue;
 					}
 				}
 			}
@@ -658,10 +622,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 				else if (is_collide(*p, horse, actual_pos) == 0) {
 					move_horse(p, &horse, current_joueur, actual_pos, p->board[actual_pos]);
 				}
-				else {
-					//
-					//continue;
-				}
 			}
 			else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 				move_prd(p, current_joueur, horse);
@@ -672,10 +632,6 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 				}
 				else if (is_collide(*p, horse, actual_pos) == 0) {
 					go_back(p, current_joueur, horse, NULL, actual_pos);
-				}
-				else {
-					// case allie
-					//continue;
 				}
 			}
 		}
@@ -689,6 +645,7 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 	}
 	Sleep(400);
 }
+/* determine le tour actuel */
 joueur_t* current_turn(plateau_t p, joueur_t* joueurs) {
 	for (int i = 0; i < p.nb_joueurs; i++) {
 		if (joueurs[i].is_playing) {
@@ -696,7 +653,7 @@ joueur_t* current_turn(plateau_t p, joueur_t* joueurs) {
 		}
 	}
 }
-
+/* fonction qui fait fonctionner tout le jeu */
 void Game() {
 	start_ascii();
 	plateau_t p;
@@ -716,7 +673,6 @@ void Game() {
 	int old_pyrd;
 	int if_6_res;
 	int i;
-
 	if (fsave_exists(SAVE_FILENAME)) { // verifie si une sauvegarde existe
 		if (choice_load() == 1) {
 			Game_t game = load_game();
@@ -734,7 +690,6 @@ void Game() {
 			goto start; // rentre dans la boucle while une fois toute les variables charger
 		}
 	}
-	
 	switch (start_choice()) // Choix du début
 	{
 	case NEW_GAME: // Nouvelle partie
@@ -750,11 +705,9 @@ void Game() {
 			}
 		}		
 		tour = check_who_start(joueurs, nb_joueurs);
-		
 		p = init_plateau(nb_joueurs, tour);
 		i = tour->num_j - 1;
 		cls();
-		
 		while (1) {
 			start: // start si le fichier de sauvegarde est charger
 			current_joueur = tour;
@@ -770,8 +723,6 @@ void Game() {
 			switch (ingame_choice())
 			{
 			case JET_DES:
-				//printf("%d %d %d\n", current_joueur->on_board, current_joueur->ecurie, current_joueur->couleur);
-				//system("pause");
 				if (current_joueur->on_board > 0) {
 					current_joueur->jet_des = jet_des();
 					printf("Vous avez obtenu %d au jet de des\n", current_joueur->jet_des);
@@ -799,10 +750,6 @@ void Game() {
 										else if (is_collide(p, horse, actual_pos) == 0) {
 											go_back(&p, current_joueur, horse, NULL, actual_pos);
 										}
-										else {
-											// case allie
-											//continue;
-										}
 									}
 								}
 								else if (is_collide(p, horse, actual_pos) == -1) {
@@ -827,10 +774,6 @@ void Game() {
 											else if (is_collide(p, horse, actual_pos) == 0) {
 												go_back(&p, current_joueur, horse, NULL, actual_pos);
 											}
-											else {
-												// case allie
-												//continue;
-											}
 										}
 									}
 								}
@@ -848,10 +791,6 @@ void Game() {
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
 								}
-								else {
-									// case allie
-									//continue;
-								}
 							}
 						}
 						else {
@@ -864,10 +803,6 @@ void Game() {
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									move_horse(&p, &horse, current_joueur, actual_pos, p.board[actual_pos]);
 								}
-								else {
-									//
-									//continue;
-								}
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 								move_prd(&p, current_joueur, horse);
@@ -878,10 +813,6 @@ void Game() {
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
-								}
-								else {
-									// case allie
-									//continue;
 								}
 							}
 							current_joueur->jet_des = jet_des();
@@ -895,10 +826,6 @@ void Game() {
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									move_horse(&p, &horse, current_joueur, actual_pos, p.board[actual_pos]);
 								}
-								else {
-									//
-									//continue;
-								}
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 								move_prd(&p, current_joueur, horse);
@@ -909,10 +836,6 @@ void Game() {
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
-								}
-								else {
-									// case allie
-									//continue;
 								}
 							}
 						}
@@ -928,10 +851,6 @@ void Game() {
 								printf("Vous avez obtenu %d au lancer de des\n", current_joueur->jet_des);
 								move_horse(&p, &horse, current_joueur, actual_pos, p.board[actual_pos]);
 							}
-							else {
-								//
-								//continue;
-							}
 						}
 						else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
 							move_prd(&p, current_joueur, horse);
@@ -942,10 +861,6 @@ void Game() {
 							}
 							else if (is_collide(p, horse, actual_pos) == 0) {
 								go_back(&p, current_joueur, horse, NULL, actual_pos);
-							}
-							else {
-								// case allie
-								//continue;
 							}
 						}
 					}
@@ -959,7 +874,7 @@ void Game() {
 							system("pause");
 						}
 						else {
-							printf("Case deja occupe reessayer");
+							printf("Case deja occupe reessayer\n");
 							continue;
 						}
 					}
@@ -970,14 +885,14 @@ void Game() {
 				i = (i + 1) % p.nb_joueurs; // change de tour
 				break;
 			case SAVE:
-				save(p, joueurs);
+				save(p, joueurs); // sauvegarde la partie
 				break;
 			default:
-				for (int i = 0; i < p.nb_joueurs; i++) {
+				/*for (int i = 0; i < p.nb_joueurs; i++) {
 					free(joueurs[i].nom);
 				}
-				free(joueurs);
-				printf("La memoire a bien ete desalloue !");
+				//free(joueurs);
+				printf("La memoire a bien ete desalloue !");*/
 				exit(0);
 				break;
 			}
@@ -988,6 +903,7 @@ void Game() {
 		break;
 	}
 }
+/* determine le joueur qui commence */
 joueur_t* check_who_start(joueur_t* joueurs, int nb_joueurs) {
 	int max = 0;
 	joueur_t* res = (joueur_t*)malloc(sizeof(joueur_t));
@@ -999,6 +915,7 @@ joueur_t* check_who_start(joueur_t* joueurs, int nb_joueurs) {
 	}
 	return res;
 }
+/* affiche les ecuries */
 void print_ecuries(joueur_t* j) {
 	int i = 0;
 	while (i < 4) {
@@ -1009,6 +926,7 @@ void print_ecuries(joueur_t* j) {
 	}
 	printf("\n");
 }
+/* choisis de charger une partie ou non */
 int choice_load() {
 	int n;
 	printf("Une sauvegarde existe souhaitez vous la charger ?\n" \
@@ -1022,6 +940,7 @@ int choice_load() {
 	}
 	return n;
 }
+/* regarde si une partie deja sauvegarder existe */
 int fsave_exists(const char* file_name) { // https://www.zentut.com/c-tutorial/c-file-exists/
 	FILE* f;
 	if (f = fopen(file_name, "rb")) {
@@ -1030,6 +949,7 @@ int fsave_exists(const char* file_name) { // https://www.zentut.com/c-tutorial/c
 	}
 	return 0;
 }
+/* affiche la case du centre */
 void print_last_case(int couleur, chevaux_t horse) {
 	switch (couleur) {
 	case ROUGE:
@@ -1103,7 +1023,6 @@ joueur_t init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj, char* n
 	char num_chevaux[4][4] = { {"C1 "}, {"C2 "}, {"C3 "}, {"C4 "} };
 	joueur_t j;
 	j.num_j = num_j;
-
 	j.nom = (char*)calloc(strlen(name), sizeof(char));
 	strcpy(j.nom, name);
 	j.ecurie = 4;
@@ -1113,12 +1032,12 @@ joueur_t init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj, char* n
 	j.jet_des = jet_des();
 	j.is_pnj = is_pnj;
 	j.is_playing = 0;
-	//j->tmp_case;
 	for (int i = 0; i < 4; i++) {
 		j.chevaux[i] = init_chevaux(couleur, i + 1, num_chevaux[i], num_j);
 	}
 	return j;
 }
+/* initialise un cheval */
 chevaux_t init_chevaux(int couleur, int numero, char* name_case, int num_j) {
 	chevaux_t chevaux;
 	size_t len_name_case = strlen(name_case);
@@ -1127,24 +1046,24 @@ chevaux_t init_chevaux(int couleur, int numero, char* name_case, int num_j) {
 	chevaux.position = -1;
 	chevaux.num_j = num_j;
 	chevaux.pos_pyrd = 1;
-	//chevaux.name_case = (char*)malloc(sizeof(char) * len_name_case + 1);
 	strcpy(chevaux.name_case, name_case);
 	return chevaux;
 }
+/* different choix dans la partie */
 int ingame_choice() {
 	int n;
 	printf("Faites un choix :\n"\
-		"          [1] Jeter les des\n"\
-		"          [2] Sauvegarder la partie\n"\
-		"          [3] Quitter le jeu\nChoix : ");
+		"\t[1] Jeter les des\n"\
+		"\t[2] Sauvegarder la partie\n"\
+		"\t[3] Quitter le jeu\nChoix : ");
 	while (scanf(" %d", &n) != 1 || !(n > 0 && n < 4) == 1) {
 		while (getchar() != '\n');
 		cls();
 		start_ascii();
 		printf("Choix non valide\nFaites un choix :\n"\
-			"          [1] Jeter les des\n"\
-			"          [2] Sauvegarder la partie\n"\
-			"          [3] Quitter le jeu\nChoix : ");
+			"\t[1] Jeter les des\n"\
+			"\t[2] Sauvegarder la partie\n"\
+			"\t[3] Quitter le jeu\nChoix : ");
 	}
 	return n;
 }
@@ -1172,43 +1091,13 @@ plateau_t init_plateau(int nb_joueurs) {
 		p.bleu_f[i] = init_chevaux(BLEU, -1, cases[i], NULL);
 	}
 	p.nb_joueurs = nb_joueurs;
-	//p.tour = tour;
 	return p;
 }
-int check_couleur_sortie(int couleur) {
-	switch (couleur)
-	{
-	case ROUGE:
-		return R_EC_SORTIE;
-	case VERT:
-		return G_EC_SORTIE;
-	case JAUNE:
-		return Y_EC_SORTIE;
-	case BLEU:
-		return B_EC_SORTIE;
-	default:
-		break;
-	}
-	return 0;
-}
-int is_win(plateau_t p) {
-	if (p.bleu_f[LEN_BOARD_FINAL - 1].numero) {
-		return BLEU;
-	}
-	else if (p.rouge_f[LEN_BOARD_FINAL - 1].numero) {
-		return ROUGE;
-	}
-	else if (p.vert_f[LEN_BOARD_FINAL - 1].numero) {
-		return VERT;
-	}
-	else if (p.jaune_f[LEN_BOARD_FINAL - 1].numero) {
-		return JAUNE;
-	}
-	return 0;
-}
+/* verifie si le joueur a fait 6 */
 int is_6(joueur_t* j) {
 	return j->jet_des == 6;
 }
+/* affiche un nombre n de case du plateau pour simplifie l'affichage des couleurs */
 void print_elems(int n, ...) {
 	va_list ap;
 	chevaux_t board_case;
@@ -1236,6 +1125,7 @@ void print_elems(int n, ...) {
 	}
 	va_end(ap);
 }
+/* desalloue plusieurs ptr */
 void desalloc_ptrs(void* arg, ...) {
 	va_list args;
 	void* ptr;
@@ -1371,6 +1261,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 	}
 	affiche_etat_joueur(joueur);
 }
+/* sauvegarde la partie */
 void save(plateau_t p, joueur_t* joueurs) {
 	FILE* f;
 	size_t str_size;
@@ -1385,11 +1276,11 @@ void save(plateau_t p, joueur_t* joueurs) {
 		str_size = strlen(joueurs[i].nom);
 		fwrite(&str_size, sizeof(size_t), 1, f);
 		fwrite(joueurs[i].nom, sizeof(char), str_size, f);
-		
 	}
 	system("pause");
 	fclose(f);
 }
+/* charge une partie */
 Game_t load_game() {
 	FILE* f;
 	Game_t game;
@@ -1408,11 +1299,12 @@ Game_t load_game() {
 		fread(&str_size, sizeof(size_t), 1, f); // je lis la taille de la chaine de caracteres
 		joueurs[i].nom = (char*)malloc(sizeof(char) * str_size);
 		fread(joueurs[i].nom, sizeof(char), str_size, f);
-		joueurs[i].nom[str_size] = '\0'; // delimite par un \0 sinon depassement du tableau
+		if (joueurs[i].nom) {
+			joueurs[i].nom[str_size] = '\0'; // delimite par un \0 sinon depassement du tableau
+		}
 	}
 	fclose(f);
 	game.joueurs = joueurs;
 	game.p = p;
 	return game;
 }
-
