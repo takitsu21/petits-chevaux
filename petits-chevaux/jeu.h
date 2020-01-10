@@ -22,6 +22,8 @@
 #define G_EC_SORTIE 29
 #define B_EC_SORTIE 43
 
+#define SAVE_FILENAME "save.dat"
+
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
@@ -55,7 +57,7 @@ typedef struct chevaux_s {
     int numero;
     int position;
     int pos_pyrd;
-    char* name_case;
+    char name_case[4];
     int num_j;
 } chevaux_t;
 
@@ -69,6 +71,7 @@ typedef struct joueur_s {
     int sortie_pos;
     int on_board;
     int is_pnj;
+    int is_playing;
     chevaux_t tmp_case[4];
     chevaux_t chevaux[4];
 } joueur_t;
@@ -89,12 +92,14 @@ typedef struct Game_s {
 
 int jet_des();
 char* get_input();
-void init_joueur(joueur_t* j, int couleur, int num_j, int sortie_pos, int is_pnj);
+joueur_t init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj, char* name);
 void affiche_etat_joueur(joueur_t* j);
 int ingame_choice();
+int fsave_exists(const char* file_name);
 int is_collide(plateau_t p, chevaux_t horse, int pos);
 void print_ecuries(joueur_t* j);
-void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos); int choose_cheval(joueur_t* j);
+void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos); 
+int choose_cheval(joueur_t* j);
 chevaux_t* horses_in_ecurie(joueur_t* j);
 int choose_cheval_ecurie(joueur_t* j);
 chevaux_t* horses_on_board(joueur_t* j);
@@ -113,13 +118,12 @@ void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int po
 void cls();
 int choice_replay();
 void affiche_plateau(plateau_t p, joueur_t* j, chevaux_t horse);
-void save(plateau_t board, joueur_t** joueurs);
-void load_plateau();
-void load_joueurs();
-plateau_t init_plateau(int nb_joueurs, joueur_t* tour);
+void save(plateau_t board, joueur_t* joueurs);
+Game_t load_game();
+plateau_t init_plateau(int nb_joueurs);
 int if_6();
 int is_win(plateau_t p);
 void sortie_ecurie(plateau_t* p, joueur_t* j, joueur_t* j_eat);
-void game2();
+void Game();
 
 #endif

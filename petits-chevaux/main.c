@@ -5,8 +5,6 @@
 
 int main()
 {
-	game2();
-	
-	
+	Game();
 	return EXIT_SUCCESS;
 }
