@@ -8,15 +8,15 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-#include <ctype.h>
 #include <windows.h>
 
-#define MAX_NAME 256
 
-#define LEN_BOARD 56
-#define LEN_BOARD_FINAL 7
-#define ROWS 15
+#define MAX_NAME        512 // taille du nom maximum
+#define LEN_BOARD       56 // taille du plateau principal
+#define LEN_BOARD_FINAL 7 // taille des pyramides
+#define ROWS            15
 
+// position de la sortie de l'ecurie de chaque couleurs
 #define R_EC_SORTIE 1
 #define Y_EC_SORTIE 15
 #define G_EC_SORTIE 29
@@ -24,70 +24,70 @@
 
 #define SAVE_FILENAME "save.dat"
 
+// https://stackoverflow.com/questions/3585846/color-text-in-terminal-applications-in-unix
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
 #define KYEL  "\x1B[33m"
 #define KBLU  "\x1B[34m"
 
+// representation des couleurs des chevaux
 enum couleur_cheval {
-    VIDE,
+    VIDE, // case vide
     ROUGE,
     BLEU,
     VERT,
     JAUNE,
-    WIN
 };
-
+// mode de jeu pendant la partie
 enum ingame_mode {
     JET_DES = 1,
     SAVE
 };
-
+// mode jeu
 enum mode {
     NEW_GAME = 1,
-    SAVE_S,
-    LOAD,
+    RULES,
     QUIT
 };
 
 /*position des chevaux*/
 typedef struct chevaux_s {
-    int couleur;
-    int numero;
-    int position;
-    int pos_pyrd;
-    char name_case[4];
-    int num_j;
+    int  couleur; // couleur du cheval
+    int  numero; // numero du cheval
+    int  position; // position du cheval
+    int  pos_pyrd; // position dans la pyramide du cheval
+    char name_case[4]; // nom du cheval
+    int  num_j; // numero du joueur du cheval
 } chevaux_t;
 
 /*structure d'un joueur*/
 typedef struct joueur_s {
-    int num_j;
-    char* nom;
-    int ecurie;
-    int couleur;
-    int jet_des;
-    int sortie_pos;
-    int on_board;
-    int is_pnj;
-    int is_playing;
-    chevaux_t tmp_case[4];
-    chevaux_t chevaux[4];
+    int       num_j; // numero du joueur
+    char*     nom; // nom du joueur
+    int       ecurie; // nombre de chevaux dans l'ecurie
+    int       couleur; // couleur du joueur
+    int       jet_des; // jet de des
+    int       sortie_pos; // position de sortie de l'ecurie en fonction de la couleur
+    int       on_board; // 1 s'il y a un cheval sur le terrain, 0 sinon
+    int       is_pnj; // 1 si le joueur est un pnj, 0 sinon
+    int       is_playing; // 1 si le joueur joue actuellement, 0 sinon
+    chevaux_t tmp_case[4]; // case temporaire pour inverser les cases du plateau
+    chevaux_t chevaux[4]; // chevaux du joueur
 } joueur_t;
-
+/* structure de mes plateaux pour gerer les chevaux du terrain*/
 typedef struct plateau_s {
-    chevaux_t board[LEN_BOARD];
-    chevaux_t rouge_f[LEN_BOARD_FINAL];
-    chevaux_t bleu_f[LEN_BOARD_FINAL];
-    chevaux_t jaune_f[LEN_BOARD_FINAL];
-    chevaux_t vert_f[LEN_BOARD_FINAL];
-    int nb_joueurs;
+    chevaux_t board[LEN_BOARD]; // plateau principal
+    chevaux_t rouge_f[LEN_BOARD_FINAL]; // pyramide rouge
+    chevaux_t bleu_f[LEN_BOARD_FINAL]; // pyramide bleu
+    chevaux_t jaune_f[LEN_BOARD_FINAL]; // pyramide jaune
+    chevaux_t vert_f[LEN_BOARD_FINAL]; // pyramide verte
+    int       nb_joueurs; // nombre de joueurs de la partie
 } plateau_t;
-
+/* sert a sauvegarder ma partie */
 typedef struct Game_s {
-    joueur_t* joueurs;
-    plateau_t p;
+    joueur_t* joueurs; // tout les joueurs
+    plateau_t p; // plateau
 } Game_t;
 
 int jet_des();
@@ -100,9 +100,9 @@ int is_collide(plateau_t p, chevaux_t horse, int pos);
 void print_ecuries(joueur_t* j);
 int is_pnj();
 void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos); 
-int choose_cheval(joueur_t* j);
+int choose_horse(joueur_t* j);
 chevaux_t* horses_in_ecurie(joueur_t* j);
-int choose_cheval_ecurie(joueur_t* j);
+int choose_horse_ecurie(joueur_t* j);
 chevaux_t* horses_on_board(joueur_t* j);
 chevaux_t init_chevaux(int couleur, int numero, char* name_case, int num_j);
 void print_elems(int n, ...);
@@ -110,12 +110,12 @@ int start_choice();
 int is_elligible_prd(joueur_t* j, chevaux_t horse, int pos);
 int new_pos_backward(joueur_t* j, int pos);
 void start_ascii();
+void desalloc_joueurs(joueur_t* joueurs, int nb_joueurs);
 int get_nb_joueurs();
-void desalloc_ptrs(void* arg, ...);
 void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen, joueur_t* j_eat, int pos);
-void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen);
+void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t cheval_choosen, joueur_t* joueurs);
 joueur_t* check_who_start(joueur_t* joueurs, int nb_joueurs);
-void move_horse(plateau_t* p, chevaux_t* horse, joueur_t* current_joueur, int pos, chevaux_t tmp);
+void move_horse(plateau_t* p, chevaux_t horse, joueur_t* current_joueur, int pos, chevaux_t tmp);
 void cls();
 void print_last_case(int couleur, chevaux_t horse);
 int choice_load();

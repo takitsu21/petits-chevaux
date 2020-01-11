@@ -1,8 +1,5 @@
 #include "jeu.h"
 
-
-
-
 int main()
 {
 	Game();
