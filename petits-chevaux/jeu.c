@@ -1,6 +1,6 @@
 #include "jeu.h"
 /* jet de des de 1 a 6 */
-int jet_des() {
+int roll_dice() {
 	srand(time(NULL));
 	return rand() % 6 + 1;
 }
@@ -28,7 +28,7 @@ char* get_input() {
 	return input;
 }
 /* obtient le nombre de joueurs pour la partie */
-int get_nb_joueurs() {
+int get_nb_players() {
 	int n;
 	printf("Combien y a t-il de joueurs ? ");
 	while (scanf(" %d", &n) != 1 || !(n >= 2 && n <= 4) == 1) {
@@ -101,13 +101,13 @@ void start_ascii() {
 	printf("\\_|  \\___|\\__|_|\\__|  \\___|_| |_|\\___| \\_/ \\__,_|\\__,_/_/\\_\\\n\n");
 }
 /* tout les chevaux du joueur qui sont sur le plateau */
-chevaux_t* horses_on_board(joueur_t* j) {
-	chevaux_t* horses_outside = NULL;
+horse_t* horses_on_board(player_t* j) {
+	horse_t* horses_outside = NULL;
 	int count = 0;
 	for (int i = 0; i < 4; i++) {
-		if (j->chevaux[i].position != -1) {
-			horses_outside = (chevaux_t*)realloc(horses_outside, (count + 1) * sizeof(chevaux_t));
-			horses_outside[count] = j->chevaux[i];
+		if (j->horse[i].position != -1) {
+			horses_outside = (horse_t*)realloc(horses_outside, (count + 1) * sizeof(horse_t));
+			horses_outside[count] = j->horse[i];
 			count++;
 		}
 	}
@@ -117,9 +117,9 @@ chevaux_t* horses_on_board(joueur_t* j) {
 	return NULL;
 }
 /* choisie un cheval disponible sur le plateau */
-int choose_horse(joueur_t* j) {
+int choose_horse(player_t* j) {
 	int n;
-	chevaux_t* horses_available = horses_on_board(j);
+	horse_t* horses_available = horses_on_board(j);
 	printf("Choississez votre cheval a utiliser :\n");
 	for (int i = 0; i < j->on_board; i++) {
 		printf("\t[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
@@ -136,13 +136,13 @@ int choose_horse(joueur_t* j) {
 	free(horses_available);
 	return n - 1;
 }
-chevaux_t* horses_in_ecurie(joueur_t* j) {
-	chevaux_t* horses_inside = NULL;
+horse_t* horses_in_ecurie(player_t* j) {
+	horse_t* horses_inside = NULL;
 	int count = 0;
 	for (int i = 0; i < 4; i++) {
-		if (j->chevaux[i].position == -1) {
-			horses_inside = realloc(horses_inside, (count + 1) * sizeof(chevaux_t));
-			horses_inside[count] = j->chevaux[i];
+		if (j->horse[i].position == -1) {
+			horses_inside = realloc(horses_inside, (count + 1) * sizeof(horse_t));
+			horses_inside[count] = j->horse[i];
 			count++;
 		}
 	}
@@ -151,7 +151,7 @@ chevaux_t* horses_in_ecurie(joueur_t* j) {
 	}
 	return NULL;
 }
-int is_valid_input(chevaux_t* horses_available, int n, int ecurie) {
+int is_valid_input(horse_t* horses_available, int n, int ecurie) {
 	if (horses_available == NULL) {
 		return 0;
 	}
@@ -162,9 +162,9 @@ int is_valid_input(chevaux_t* horses_available, int n, int ecurie) {
 	}
 	return 0;
 }
-int choose_horse_ecurie(joueur_t* j) {
+int choose_horse_ecurie(player_t* j) {
 	int n;
-	chevaux_t* horses_available = horses_in_ecurie(j);
+	horse_t* horses_available = horses_in_ecurie(j);
 	printf("Choississez votre cheval a utiliser :\n");
 	for (int i = 0; i < j->ecurie; i++) {
 		printf("\t[%d] %s\n", horses_available[i].numero, horses_available[i].name_case);
@@ -200,7 +200,7 @@ int if_6() {
 	}
 	return n;
 }
-int random_choice_pnj(joueur_t* j, chevaux_t* horses, int max) {
+int random_choice_pnj(player_t* j, horse_t* horses, int max) {
 	int r_choice;
 	srand(time(NULL));
 	while (1) {
@@ -211,32 +211,32 @@ int random_choice_pnj(joueur_t* j, chevaux_t* horses, int max) {
 		}
 	}
 }
-void sortie_ecurie(plateau_t* p, joueur_t* j, joueur_t* joueurs) {
-	chevaux_t* horse;
-	int pos = j->sortie_pos;
-	joueur_t* j_eat = NULL;
+void sortie_ecurie(board_t* p, player_t* j, player_t* players) {
+	horse_t* horse;
+	int pos = j->out_pos;
+	player_t* j_eat = NULL;
 	if (p->board[pos].position != -1) {
-		 j_eat = &joueurs[p->board[pos].num_j - 1];
+		 j_eat = &players[p->board[pos].num_j - 1];
 	}
 	int idx_horse;
 	if (j->is_pnj == 1) {
-		horse = &j->chevaux[random_choice_pnj(j, horses_in_ecurie(j), j->ecurie) - 1];
+		horse = &j->horse[random_choice_pnj(j, horses_in_ecurie(j), j->ecurie) - 1];
 	}
 	else {
-		horse = &j->chevaux[choose_horse_ecurie(j)];
+		horse = &j->horse[choose_horse_ecurie(j)];
 	}
 	idx_horse = horse->numero - 1;
 	if (j_eat != NULL) {
-		if (j_eat->couleur != j->couleur) {
-			j->tmp_case[idx_horse] = j_eat->tmp_case[j_eat->chevaux[p->board[pos].numero - 1].numero - 1];
+		if (j_eat->color != j->color) {
+			j->tmp_case[idx_horse] = j_eat->tmp_case[j_eat->horse[p->board[pos].numero - 1].numero - 1];
 			horse->position = pos;
 			p->board[pos] = *horse;
 			j->ecurie -= 1;
 			j->on_board += 1;
-			j_eat->chevaux[p->board[pos].numero - 1].position = -1;
+			j_eat->horse[p->board[pos].numero - 1].position = -1;
 			j_eat->ecurie += 1;
 			j_eat->on_board -= 1;
-			printf("Vous avez manger le cheval de %s en sortant votre cheval %s\n", j_eat->nom, horse->name_case);
+			printf("Vous avez manger le cheval de %s en sortant votre cheval %s\n", j_eat->name, horse->name_case);
 		}
 	}
 	else if (is_collide(*p, *horse, pos) == 0) {
@@ -252,25 +252,25 @@ void sortie_ecurie(plateau_t* p, joueur_t* j, joueur_t* joueurs) {
 	}
 }
 /* mange un cheval ennemie */
-void eat_horse(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos) {
-	chevaux_t old_case = current_joueur->tmp_case[horse.numero - 1];
+void eat_horse(board_t* p, player_t* current_joueur, horse_t horse, player_t* j_eat, int pos) {
+	horse_t old_case = current_joueur->tmp_case[horse.numero - 1];
 	int old_pos = horse.position;
-	printf("Le cheval %s de %s a ete manger par %s\n", p->board[pos].name_case, j_eat->nom, current_joueur->nom);
-	j_eat->chevaux[p->board[pos].numero - 1].position = -1;
+	printf("Le cheval %s de %s a ete manger par %s\n", p->board[pos].name_case, j_eat->name, current_joueur->name);
+	j_eat->horse[p->board[pos].numero - 1].position = -1;
 	j_eat->on_board -= 1;
 	j_eat->ecurie += 1;
 	current_joueur->tmp_case[horse.numero - 1] = j_eat->tmp_case[p->board[pos].numero - 1];
-	current_joueur->chevaux[horse.numero - 1].position = pos;
-	p->board[pos] = current_joueur->chevaux[horse.numero - 1];
+	current_joueur->horse[horse.numero - 1].position = pos;
+	p->board[pos] = current_joueur->horse[horse.numero - 1];
 	p->board[old_pos] = old_case;
 	p->board[old_pos].position = -1;
 	Sleep(1000);
 }
 /* 1 si cheval ennemie, -1 si allie, 0 si case vide */
-int is_collide(plateau_t p, chevaux_t horse, int pos) {
-	chevaux_t horse_collide_check = p.board[pos];
+int is_collide(board_t p, horse_t horse, int pos) {
+	horse_t horse_collide_check = p.board[pos];
 	if (horse_collide_check.position >= 0 && horse_collide_check.position < 57) {
-		if (horse_collide_check.couleur != horse.couleur) {
+		if (horse_collide_check.color != horse.color) {
 			return 1;
 		}
 		else {
@@ -280,8 +280,8 @@ int is_collide(plateau_t p, chevaux_t horse, int pos) {
 	return 0;
 }
 /*nouvelle position si la marche d'escalier n'a pas ete atteinte*/
-int new_pos_backward(joueur_t* j, int pos) {
-	int first_stair = j->sortie_pos - 1;
+int new_pos_backward(player_t* j, int pos) {
+	int first_stair = j->out_pos - 1;
 	int new_pos;
 	if (first_stair == 0) {
 		first_stair += 56;
@@ -291,9 +291,9 @@ int new_pos_backward(joueur_t* j, int pos) {
 	return new_pos;
 }
 /*0 si elligible a monter, 1 si superieur au 1er escalier, -1 si inferieur*/
-int is_elligible_prd(joueur_t* j, chevaux_t horse, int pos) {
-	int first_stair = j->sortie_pos - 1;
-	int tour_complet;
+int is_elligible_prd(player_t* j, horse_t horse, int pos) {
+	int first_stair = j->out_pos - 1;
+	int full_turn;
 	if (horse.position == first_stair) {
 		return 0;
 	}
@@ -301,26 +301,26 @@ int is_elligible_prd(joueur_t* j, chevaux_t horse, int pos) {
 		first_stair += 56;
 		pos += 56;
 	}
-	tour_complet = first_stair - horse.position;
-	if (tour_complet <= 6 && tour_complet >= 0) {
+	full_turn = first_stair - horse.position;
+	if (full_turn <= 6 && full_turn >= 0) {
 		if (horse.position == first_stair) {
 			return 0; // elligible peut monter la pyramide
 		}
-		else if (horse.position + j->jet_des > first_stair) {
+		else if (horse.position + j->roll_dice > first_stair) {
 			return 1; // superieur, retourne en arriere
 		}
 	}
 	return -1; // inferieur avance normalement
 }
 /* deplace un cheval */
-void move_horse(plateau_t* p, chevaux_t horse, joueur_t* current_joueur, int pos, chevaux_t tmp) {
-	p->board[pos] = current_joueur->chevaux[horse.numero - 1];
+void move_horse(board_t* p, horse_t horse, player_t* current_joueur, int pos, horse_t tmp) {
+	p->board[pos] = current_joueur->horse[horse.numero - 1];
 	p->board[horse.position] = current_joueur->tmp_case[horse.numero - 1];
 	current_joueur->tmp_case[horse.numero - 1] = tmp;
-	current_joueur->chevaux[horse.numero - 1].position = pos;
+	current_joueur->horse[horse.numero - 1].position = pos;
 }
 /* si le cheval a fait un tour complet retourne en arriere du nombre de cases restant > au tour complet */
-void go_back(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* j_eat, int pos) {
+void go_back(board_t* p, player_t* current_joueur, horse_t horse, player_t* j_eat, int pos) {
 	int new_pos_back = new_pos_backward(current_joueur, pos);
 	if (horse.position == new_pos_back) { //reste au meme endroit
 		printf("reste au meme endroit\n");
@@ -356,113 +356,113 @@ int is_pnj() {
 	return n;
 }
 /* deplace un cheval sur sa pyramide */
-void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t* joueurs) {
+void move_prd(board_t* p, player_t* current_joueur, horse_t horse, player_t* players) {
 	int old_pyrd; // valeur du cheval dans la pyramide - 1
-	chevaux_t tmp;
-	if (current_joueur->jet_des == horse.pos_pyrd || current_joueur->jet_des == horse.pos_pyrd - 1) {
-		if (current_joueur->couleur == ROUGE) {
+	horse_t tmp;
+	if (current_joueur->roll_dice == horse.pos_pyrd || current_joueur->roll_dice == horse.pos_pyrd - 1) {
+		if (current_joueur->color == RED) {
 			if (horse.pos_pyrd < 8) {
 				old_pyrd = horse.pos_pyrd - 1;
 				if (is_6(current_joueur) && horse.pos_pyrd == 7) {
 					horse.pos_pyrd = 7;
-					p->rouge_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
-					affiche_plateau(*p, current_joueur, horse);
+					p->red_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					show_board(*p, current_joueur, horse);
 					printf("Joueur gagnant ");
-					printf(KRED"%s\n"KNRM, current_joueur->nom);
-					desalloc_joueurs(joueurs, p->nb_joueurs);
+					printf(KRED"%s\n"KNRM, current_joueur->name);
+					desalloc_players(players, p->nb_players);
 				}
-				tmp = p->rouge_f[old_pyrd];
+				tmp = p->red_final[old_pyrd];
 				if (horse.pos_pyrd == 1) {
-					p->board[current_joueur->sortie_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->board[current_joueur->out_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
 					horse.position = -2;
 				}
-				p->rouge_f[horse.pos_pyrd - 1] = current_joueur->chevaux[horse.numero - 1];
+				p->red_final[horse.pos_pyrd - 1] = current_joueur->horse[horse.numero - 1];
 				if (old_pyrd > 0) {
-					p->rouge_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->red_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
 				}
 				current_joueur->tmp_case[horse.numero - 1] = tmp;
-				current_joueur->chevaux[horse.numero - 1].pos_pyrd += 1;
+				current_joueur->horse[horse.numero - 1].pos_pyrd += 1;
 			}
 			else {
 				printf("Vous devez faire un 6 pour gagner");
 			}
 		}
-		else if (current_joueur->couleur == BLEU) {
+		else if (current_joueur->color == BLUE) {
 			if (horse.pos_pyrd < 8) {
 				old_pyrd = horse.pos_pyrd - 1;
 				if (is_6(current_joueur) && horse.pos_pyrd == 7) {
 					horse.pos_pyrd = 7;
-					p->bleu_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
-					affiche_plateau(*p, current_joueur, horse);
+					p->blue_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					show_board(*p, current_joueur, horse);
 					printf("Joueur gagnant ");
-					printf(KBLU"%s\n"KNRM, current_joueur->nom);
-					desalloc_joueurs(joueurs, p->nb_joueurs);
+					printf(KBLU"%s\n"KNRM, current_joueur->name);
+					desalloc_players(players, p->nb_players);
 				}
-				tmp = p->bleu_f[old_pyrd];
+				tmp = p->blue_final[old_pyrd];
 				if (horse.pos_pyrd == 1) {
-					p->board[current_joueur->sortie_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->board[current_joueur->out_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
 					horse.position = -2;
 				}
-				p->bleu_f[horse.pos_pyrd - 1] = current_joueur->chevaux[horse.numero - 1];
+				p->blue_final[horse.pos_pyrd - 1] = current_joueur->horse[horse.numero - 1];
 				if (old_pyrd > 0) {
-					p->bleu_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->blue_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
 				}
 				current_joueur->tmp_case[horse.numero - 1] = tmp;
-				current_joueur->chevaux[horse.numero - 1].pos_pyrd += 1;
+				current_joueur->horse[horse.numero - 1].pos_pyrd += 1;
 			}
 			else {
 				printf("Vous devez faire un 6 pour gagner");
 			}
 		}
-		else if (current_joueur->couleur == JAUNE) {
+		else if (current_joueur->color == YELLOW) {
 			if (horse.pos_pyrd < 8) {
 				old_pyrd = horse.pos_pyrd - 1;
 				if (is_6(current_joueur) && horse.pos_pyrd == 7) {
 					horse.pos_pyrd = 7;
-					p->jaune_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
-					affiche_plateau(*p, current_joueur, horse);
+					p->yellow_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					show_board(*p, current_joueur, horse);
 					printf("Joueur gagnant ");
-					printf(KYEL"%s\n"KNRM, current_joueur->nom);
-					desalloc_joueurs(joueurs, p->nb_joueurs);
+					printf(KYEL"%s\n"KNRM, current_joueur->name);
+					desalloc_players(players, p->nb_players);
 				}
-				tmp = p->jaune_f[old_pyrd];
+				tmp = p->yellow_final[old_pyrd];
 				if (horse.pos_pyrd == 1) {
-					p->board[current_joueur->sortie_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->board[current_joueur->out_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
 				}
-				p->jaune_f[horse.pos_pyrd - 1] = current_joueur->chevaux[horse.numero - 1];
+				p->yellow_final[horse.pos_pyrd - 1] = current_joueur->horse[horse.numero - 1];
 				if (old_pyrd > 0) {
-					p->jaune_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->yellow_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
 					horse.position = -2;
 				}
 				current_joueur->tmp_case[horse.numero - 1] = tmp;
-				current_joueur->chevaux[horse.numero - 1].pos_pyrd += 1;
+				current_joueur->horse[horse.numero - 1].pos_pyrd += 1;
 			}
 			else {
 				printf("Vous devez faire un 6 pour gagner");
 			}
 		}
-		else if (current_joueur->couleur == VERT) {
+		else if (current_joueur->color == GREEN) {
 			if (horse.pos_pyrd < 8) {
 				old_pyrd = horse.pos_pyrd - 1;
 				if (is_6(current_joueur) && horse.pos_pyrd == 7) {
 					horse.pos_pyrd = 7;
-					p->vert_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
-					affiche_plateau(*p, current_joueur, horse);
+					p->green_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					show_board(*p, current_joueur, horse);
 					printf("Joueur gagnant ");
-					printf(KGRN"%s\n"KNRM, current_joueur->nom);
-					desalloc_joueurs(joueurs, p->nb_joueurs);
+					printf(KGRN"%s\n"KNRM, current_joueur->name);
+					desalloc_players(players, p->nb_players);
 				}
-				tmp = p->vert_f[old_pyrd];
+				tmp = p->green_final[old_pyrd];
 				if (horse.pos_pyrd == 1) {
-					p->board[current_joueur->sortie_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->board[current_joueur->out_pos - 1] = current_joueur->tmp_case[horse.numero - 1];
 				}
-				p->vert_f[horse.pos_pyrd - 1] = current_joueur->chevaux[horse.numero - 1];
+				p->green_final[horse.pos_pyrd - 1] = current_joueur->horse[horse.numero - 1];
 				if (old_pyrd > 0) {
-					p->vert_f[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
+					p->green_final[old_pyrd - 1] = current_joueur->tmp_case[horse.numero - 1];
 					horse.position = -2;
 				}
 				current_joueur->tmp_case[horse.numero - 1] = tmp;
-				current_joueur->chevaux[horse.numero - 1].pos_pyrd += 1;
+				current_joueur->horse[horse.numero - 1].pos_pyrd += 1;
 			}
 			else {
 				printf("Vous devez faire un 6 pour gagner");
@@ -471,54 +471,54 @@ void move_prd(plateau_t* p, joueur_t* current_joueur, chevaux_t horse, joueur_t*
 	}
 }
 /* regarde si un cheval se collisionne avec un autre cheval de son equipe */
-int is_collide_prd(plateau_t p, chevaux_t horse) {
-	switch (horse.couleur) {
-	case ROUGE:
-		return p.rouge_f[horse.pos_pyrd].pos_pyrd != -1;
-	case BLEU:
-		return p.bleu_f[horse.pos_pyrd].pos_pyrd != -1;
-	case JAUNE:
-		return p.jaune_f[horse.pos_pyrd].pos_pyrd != -1;
-	case VERT:
-		return p.vert_f[horse.pos_pyrd].pos_pyrd != -1;
+int is_collide_prd(board_t p, horse_t horse) {
+	switch (horse.color) {
+	case RED:
+		return p.red_final[horse.pos_pyrd].pos_pyrd != -1;
+	case BLUE:
+		return p.blue_final[horse.pos_pyrd].pos_pyrd != -1;
+	case YELLOW:
+		return p.yellow_final[horse.pos_pyrd].pos_pyrd != -1;
+	case GREEN:
+		return p.green_final[horse.pos_pyrd].pos_pyrd != -1;
 	default:
 		break;
 	}
 }
 /* gere les IAs du jeu */
-void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
-	joueur_t* j_manger;
-	chevaux_t tmp;
-	chevaux_t horse;
+void ia(board_t* p, player_t* current_joueur, player_t* players) {
+	player_t* j_eat;
+	horse_t tmp;
+	horse_t horse;
 	int actual_pos;
 	int out_or_play;
-	current_joueur->jet_des = jet_des();
-	printf("Vous avez obtenu %d en jetant les des\n", current_joueur->jet_des);
+	current_joueur->roll_dice = roll_dice();
+	printf("Vous avez obtenu %d en jetant les des\n", current_joueur->roll_dice);
 	Sleep(200);
 	if (current_joueur->on_board > 0) {
-		if (is_6(current_joueur) && p->board[current_joueur->sortie_pos].position == -1) {
+		if (is_6(current_joueur) && p->board[current_joueur->out_pos].position == -1) {
 			srand(time(NULL));
 			out_or_play = 2;
-			if (out_or_play == 1 && p->board[current_joueur->sortie_pos].position == -1) { // sort un cheval puis rejoue
+			if (out_or_play == 1 && p->board[current_joueur->out_pos].position == -1) { // sort un cheval puis rejoue
 				if (current_joueur->ecurie > 0) {
-					sortie_ecurie(p, current_joueur, joueurs);
+					sortie_ecurie(p, current_joueur, players);
 				}
-				horse = current_joueur->chevaux[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
-				actual_pos = (horse.position + current_joueur->jet_des) % 56;
+				horse = current_joueur->horse[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
+				actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 				if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						eat_horse(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						eat_horse(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 							move_horse(p, horse, current_joueur, actual_pos, p->board[actual_pos]);
 						}
 						else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-							move_prd(p, current_joueur, horse, joueurs);
+							move_prd(p, current_joueur, horse, players);
 						}
 						else {
 							if (is_collide(*p, horse, actual_pos) == 1) {
-								go_back(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+								go_back(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 							}
 							else if (is_collide(*p, horse, actual_pos) == 0) {
 								go_back(p, current_joueur, horse, NULL, actual_pos);
@@ -527,11 +527,11 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 					}
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-					move_prd(p, current_joueur, horse, joueurs);
+					move_prd(p, current_joueur, horse, players);
 				}
 				else {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						go_back(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						go_back(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(p, current_joueur, horse, NULL, actual_pos);
@@ -539,49 +539,49 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 				}
 			}
 			else {
-				horse = current_joueur->chevaux[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
-				actual_pos = (horse.position + current_joueur->jet_des) % 56;
+				horse = current_joueur->horse[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
+				actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 				if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						eat_horse(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						eat_horse(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						move_horse(p, horse, current_joueur, actual_pos, p->board[actual_pos]);
 					}
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-					move_prd(p, current_joueur, horse, joueurs);
+					move_prd(p, current_joueur, horse, players);
 				}
 				else {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						go_back(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						go_back(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(p, current_joueur, horse, NULL, actual_pos);
 					}
 				}
 				Sleep(900);
-				current_joueur->jet_des = jet_des();
-				printf("Vous jouez une nouvelle fois, vous avez obtenu %d en jetant les des\n", current_joueur->jet_des);
-				horse = current_joueur->chevaux[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
-				actual_pos = (horse.position + current_joueur->jet_des) % 56;
-				if (horse.pos_pyrd == 6 && current_joueur->jet_des == 6) {
-					move_prd(p, current_joueur, horse, joueurs);
+				current_joueur->roll_dice = roll_dice();
+				printf("Vous jouez une nouvelle fois, vous avez obtenu %d en jetant les des\n", current_joueur->roll_dice);
+				horse = current_joueur->horse[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
+				actual_pos = (horse.position + current_joueur->roll_dice) % 56;
+				if (horse.pos_pyrd == 6 && current_joueur->roll_dice == 6) {
+					move_prd(p, current_joueur, horse, players);
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						eat_horse(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						eat_horse(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						move_horse(p, horse, current_joueur, actual_pos, p->board[actual_pos]);
 					}
 				}
 				else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-					move_prd(p, current_joueur, horse, joueurs);
+					move_prd(p, current_joueur, horse, players);
 				}
 				else {
 					if (is_collide(*p, horse, actual_pos) == 1) {
-						go_back(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+						go_back(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 					}
 					else if (is_collide(*p, horse, actual_pos) == 0) {
 						go_back(p, current_joueur, horse, NULL, actual_pos);
@@ -590,22 +590,22 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 			}
 		}
 		else {
-			horse = current_joueur->chevaux[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
-			actual_pos = (horse.position + current_joueur->jet_des) % 56;
+			horse = current_joueur->horse[random_choice_pnj(current_joueur, horses_on_board(current_joueur), 4) - 1];
+			actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 			if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 				if (is_collide(*p, horse, actual_pos) == 1) {
-					eat_horse(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+					eat_horse(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 				}
 				else if (is_collide(*p, horse, actual_pos) == 0) {
 					move_horse(p, horse, current_joueur, actual_pos, p->board[actual_pos]);
 				}
 			}
 			else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-				move_prd(p, current_joueur, horse, joueurs);
+				move_prd(p, current_joueur, horse, players);
 			}
 			else {
 				if (is_collide(*p, horse, actual_pos) == 1) {
-					go_back(p, current_joueur, horse, &joueurs[p->board[actual_pos].num_j - 1], actual_pos);
+					go_back(p, current_joueur, horse, &players[p->board[actual_pos].num_j - 1], actual_pos);
 				}
 				else if (is_collide(*p, horse, actual_pos) == 0) {
 					go_back(p, current_joueur, horse, NULL, actual_pos);
@@ -615,35 +615,35 @@ void ia(plateau_t* p, joueur_t* current_joueur, joueur_t* joueurs) {
 	}
 	else { // si le joueur n'a toujours pas de chevaux sur le terrain
 		if (is_6(current_joueur)) {
-			sortie_ecurie(p, current_joueur, joueurs);
+			sortie_ecurie(p, current_joueur, players);
 		}
 	}
 	Sleep(900);
 }
 /* determine le tour actuel */
-joueur_t* current_turn(plateau_t p, joueur_t* joueurs) {
-	for (int i = 0; i < p.nb_joueurs; i++) {
-		if (joueurs[i].is_playing) {
-			return &joueurs[i];
+player_t* current_turn(board_t p, player_t* players) {
+	for (int i = 0; i < p.nb_players; i++) {
+		if (players[i].is_playing) {
+			return &players[i];
 		}
 	}
 }
 /* fonction qui fait fonctionner tout le jeu */
 void Game() {
 	start_ascii();
-	plateau_t p;
-	joueur_t* current_joueur;
-	joueur_t* j_manger;
-	chevaux_t tmp;
-	chevaux_t horse;
-	joueur_t* joueurs = NULL;
-	joueur_t* tour = NULL;
+	board_t p;
+	player_t* current_joueur;
+	player_t* j_eat;
+	horse_t tmp;
+	horse_t horse;
+	player_t* players = NULL;
+	player_t* tour = NULL;
 	char bots_name[4][10] = { {"HAL-9000"}, {"T-1000"}, {"R2D2"}, {"T-800"} };
-	int sortie_posis[4] = { R_EC_SORTIE, B_EC_SORTIE, G_EC_SORTIE, Y_EC_SORTIE };
-	int couleurs[4] = { ROUGE, BLEU, VERT, JAUNE };
+	int out_posis[4] = { R_EC_OUT, B_EC_OUT, G_EC_OUT, Y_EC_OUT };
+	int couleurs[4] = { RED, BLUE, GREEN, YELLOW };
 	int actual_pos;
 	int out_or_play;
-	int nb_joueurs;
+	int nb_players;
 	int choose_idx;
 	int old_pyrd;
 	int if_6_res;
@@ -653,13 +653,14 @@ void Game() {
 			Game_t game = load_game();
 			printf("Chargement...\n");
 			p = game.p;
-			joueurs = (joueur_t*)calloc(p.nb_joueurs, sizeof(joueur_t));
-			for (int i = 0; i < p.nb_joueurs; i++) { // charge les joueurs
-				joueurs[i] = game.joueurs[i];
+			players = (player_t*)calloc(p.nb_players, sizeof(player_t));
+			for (int i = 0; i < p.nb_players; i++) { // charge les players
+				players[i] = game.players[i];
 			}
+			desalloc_players(game.players, p.nb_players);
 			printf("Le jeu a bien ete charger !\n");
-			tour = current_turn(p, joueurs);
-			//tour = check_who_start(joueurs, p.nb_joueurs);
+			tour = current_turn(p, players);
+			//tour = check_who_start(players, p.nb_players);
 			i = tour->num_j - 1;
 			goto start; // rentre dans la boucle while une fois toutes les structures charger
 		}
@@ -667,21 +668,21 @@ void Game() {
 	switch (start_choice()) // Choix du debut
 	{
 	case NEW_GAME: // Nouvelle partie
-		nb_joueurs = get_nb_joueurs();
-		joueurs = (joueur_t*)calloc(nb_joueurs, sizeof(joueur_t));
-		for (int i = 0; i < nb_joueurs; i++) { // initialise tout les joueurs
+		nb_players = get_nb_players();
+		players = (player_t*)calloc(nb_players, sizeof(player_t));
+		for (int i = 0; i < nb_players; i++) { // initialise tout les players
 			printf("Joueur %d : ", i + 1);
 			if (is_pnj() == 1) {
-				joueurs[i] = init_joueur(couleurs[i], i + 1, sortie_posis[i], 1, bots_name[i]);
+				players[i] = init_joueur(couleurs[i], i + 1, out_posis[i], 1, bots_name[i]);
 			}
 			else {
 				printf("Nom du joueur : ");
-				joueurs[i] = init_joueur(couleurs[i], i + 1, sortie_posis[i], 0, get_input());
+				players[i] = init_joueur(couleurs[i], i + 1, out_posis[i], 0, get_input());
 			}
 		}		
-		tour = check_who_start(joueurs, nb_joueurs);
-		printf("Joueur %s a eu le plus grand score au lancer de des, il commence\n", tour->nom);
-		p = init_plateau(nb_joueurs, tour);
+		tour = check_who_start(players, nb_players);
+		printf("Joueur %s a eu le plus grand score au lancer de des, il commence\n", tour->name);
+		p = init_board(nb_players, tour);
 		i = tour->num_j - 1;
 		system("pause");
 		cls();
@@ -689,41 +690,41 @@ void Game() {
 			start: // start si le fichier de sauvegarde est charger
 			current_joueur = tour;
 			current_joueur->is_playing = 1;
-			affiche_plateau(p, current_joueur, current_joueur->chevaux[0]);
+			show_board(p, current_joueur, current_joueur->horse[0]);
 			if (current_joueur->is_pnj == 1) {
-				ia(&p, current_joueur, joueurs);
-				i = (i + 1) % p.nb_joueurs;
-				tour = &joueurs[i];
+				ia(&p, current_joueur, players);
+				i = (i + 1) % p.nb_players;
+				tour = &players[i];
 				continue;
 			}
 			switch (ingame_choice())
 			{
-			case JET_DES:
+			case ROLL_DICE:
 				if (current_joueur->on_board > 0) {
-					current_joueur->jet_des = jet_des();
-					printf("Vous avez obtenu %d au jet de des\n", current_joueur->jet_des);
+					current_joueur->roll_dice = roll_dice();
+					printf("Vous avez obtenu %d au jet de des\n", current_joueur->roll_dice);
 					if (is_6(current_joueur)) {
 						out_or_play = choice_replay();
-						if (out_or_play == 1 && p.board[current_joueur->sortie_pos].position == -1) { // sort un cheval puis rejoue
+						if (out_or_play == 1 && p.board[current_joueur->out_pos].position == -1) { // sort un cheval puis rejoue
 							if (current_joueur->ecurie > 0) {
-								sortie_ecurie(&p, current_joueur, joueurs);
+								sortie_ecurie(&p, current_joueur, players);
 							}
-							horse = current_joueur->chevaux[choose_horse(current_joueur)];
-							actual_pos = (horse.position + current_joueur->jet_des) % 56;
+							horse = current_joueur->horse[choose_horse(current_joueur)];
+							actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 							if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									eat_horse(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									eat_horse(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 										move_horse(&p, horse, current_joueur, actual_pos, p.board[actual_pos]);
 									}
 									else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-										move_prd(&p, current_joueur, horse, joueurs);
+										move_prd(&p, current_joueur, horse, players);
 									}
 									else {
 										if (is_collide(p, horse, actual_pos) == 1) {
-											go_back(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+											go_back(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 										}
 										else if (is_collide(p, horse, actual_pos) == 0) {
 											go_back(&p, current_joueur, horse, NULL, actual_pos);
@@ -732,11 +733,11 @@ void Game() {
 								}
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-								move_prd(&p, current_joueur, horse, joueurs);
+								move_prd(&p, current_joueur, horse, players);
 							}
 							else {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									go_back(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									go_back(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
@@ -744,52 +745,52 @@ void Game() {
 							}
 						}
 						else {
-							horse = current_joueur->chevaux[choose_horse(current_joueur)];
-							actual_pos = (horse.position + current_joueur->jet_des) % 56;
+							horse = current_joueur->horse[choose_horse(current_joueur)];
+							actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 							if (horse.pos_pyrd == 6) {
-								move_prd(&p, current_joueur, horse, joueurs);
+								move_prd(&p, current_joueur, horse, players);
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									eat_horse(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									eat_horse(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									move_horse(&p, horse, current_joueur, actual_pos, p.board[actual_pos]);
 								}
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-								move_prd(&p, current_joueur, horse, joueurs);
+								move_prd(&p, current_joueur, horse, players);
 							}
 							else {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									go_back(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									go_back(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
 								}
 							}
 							Sleep(900);
-							current_joueur->jet_des = jet_des();
-							printf("Vous rejouez automatiquement vous avez obtenu %d en lancant les des", current_joueur->jet_des);
-							horse = current_joueur->chevaux[choose_horse(current_joueur)];
-							actual_pos = (horse.position + current_joueur->jet_des) % 56;
-							if (horse.pos_pyrd == 6 && current_joueur->jet_des == 6) {
-								move_prd(&p, current_joueur, horse, joueurs);
+							current_joueur->roll_dice = roll_dice();
+							printf("Vous rejouez automatiquement vous avez obtenu %d en lancant les des", current_joueur->roll_dice);
+							horse = current_joueur->horse[choose_horse(current_joueur)];
+							actual_pos = (horse.position + current_joueur->roll_dice) % 56;
+							if (horse.pos_pyrd == 6 && current_joueur->roll_dice == 6) {
+								move_prd(&p, current_joueur, horse, players);
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									eat_horse(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									eat_horse(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									move_horse(&p, horse, current_joueur, actual_pos, p.board[actual_pos]);
 								}
 							}
 							else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-								move_prd(&p, current_joueur, horse, joueurs);
+								move_prd(&p, current_joueur, horse, players);
 							}
 							else {
 								if (is_collide(p, horse, actual_pos) == 1) {
-									go_back(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+									go_back(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 								}
 								else if (is_collide(p, horse, actual_pos) == 0) {
 									go_back(&p, current_joueur, horse, NULL, actual_pos);
@@ -798,23 +799,23 @@ void Game() {
 						}
 					}
 					else {
-						horse = current_joueur->chevaux[choose_horse(current_joueur)];
-						actual_pos = (horse.position + current_joueur->jet_des) % 56;
+						horse = current_joueur->horse[choose_horse(current_joueur)];
+						actual_pos = (horse.position + current_joueur->roll_dice) % 56;
 						if (is_elligible_prd(current_joueur, horse, actual_pos) == -1) {
 							if (is_collide(p, horse, actual_pos) == 1) {
-								eat_horse(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+								eat_horse(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 							}
 							else if (is_collide(p, horse, actual_pos) == 0) {
-								printf("Vous avez obtenu %d au lancer de des\n", current_joueur->jet_des);
+								printf("Vous avez obtenu %d au lancer de des\n", current_joueur->roll_dice);
 								move_horse(&p, horse, current_joueur, actual_pos, p.board[actual_pos]);
 							}
 						}
 						else if (is_elligible_prd(current_joueur, horse, actual_pos) == 0) {
-							move_prd(&p, current_joueur, horse, joueurs);
+							move_prd(&p, current_joueur, horse, players);
 						}
 						else {
 							if (is_collide(p, horse, actual_pos) == 1) {
-								go_back(&p, current_joueur, horse, &joueurs[p.board[actual_pos].num_j - 1], actual_pos);
+								go_back(&p, current_joueur, horse, &players[p.board[actual_pos].num_j - 1], actual_pos);
 							}
 							else if (is_collide(p, horse, actual_pos) == 0) {
 								go_back(&p, current_joueur, horse, NULL, actual_pos);
@@ -823,22 +824,22 @@ void Game() {
 					}
 				}
 				else {
-					current_joueur->jet_des = jet_des();
-					printf("Vous avez obtenu %d au jet de des\n", current_joueur->jet_des);
+					current_joueur->roll_dice = roll_dice();
+					printf("Vous avez obtenu %d au jet de des\n", current_joueur->roll_dice);
 					if (is_6(current_joueur)) {
-						sortie_ecurie(&p, current_joueur, joueurs);
+						sortie_ecurie(&p, current_joueur, players);
 					}
 					Sleep(500);
 				}
 				//Changement de joueur
-				i = (i + 1) % p.nb_joueurs;
-				tour = &joueurs[i];
+				i = (i + 1) % p.nb_players;
+				tour = &players[i];
 				break;
 			case SAVE:
-				save(p, joueurs); // sauvegarde la partie
+				save(p, players); // sauvegarde la partie
 				break;
 			case QUIT:
-				desalloc_joueurs(joueurs, p.nb_joueurs); // desalloue les joueurs et quitte le jeu
+				desalloc_players(players, p.nb_players); // desalloue les players et quitte le jeu
 				free(tour);
 				break;
 			default:
@@ -859,33 +860,34 @@ void Game() {
 		break;
 	}
 }
-/* desalloue proprement tout les joueurs */
-void desalloc_joueurs(joueur_t* joueurs, int nb_joueurs) {
-	for (int i = 0; i < nb_joueurs; i++) {
-		free(joueurs[i].nom);
+/* desalloue proprement tout les players */
+void desalloc_players(player_t* players, int nb_players) {
+	for (int i = 0; i < nb_players; i++) {
+		free(players[i].name);
 	}
-	free(joueurs);
+	free(players);
 	printf("Memoire desalloue avec succes !\n");
+	system("pause");
 	exit(0);
 }
 /* determine le joueur qui commence */
-joueur_t* check_who_start(joueur_t* joueurs, int nb_joueurs) {
+player_t* check_who_start(player_t* players, int nb_players) {
 	int max = 0;
-	joueur_t* res = (joueur_t*)malloc(sizeof(joueur_t));
-	for (int i = 0; i < nb_joueurs; i++) {
-		if (joueurs[i].jet_des > max) {
-			max = joueurs[i].jet_des;
-			res = &joueurs[i];
+	player_t* res = (player_t*)malloc(sizeof(player_t));
+	for (int i = 0; i < nb_players; i++) {
+		if (players[i].roll_dice > max) {
+			max = players[i].roll_dice;
+			res = &players[i];
 		}
 	}
 	return res;
 }
 /* affiche les ecuries */
-void print_ecuries(joueur_t* j) {
+void print_ecuries(player_t* j) {
 	int i = 0;
 	while (i < 4) {
-		if (j->chevaux[i].position == -1) {
-			printf("%s", j->chevaux[i].name_case);
+		if (j->horse[i].position == -1) {
+			printf("%s", j->horse[i].name_case);
 		}
 		i++;
 	}
@@ -915,24 +917,24 @@ int fsave_exists(const char* file_name) { // https://www.zentut.com/c-tutorial/c
 	return 0;
 }
 /* affiche la case du centre */
-void print_last_case(int couleur, chevaux_t horse) {
+void print_last_case(int couleur, horse_t horse) {
 	switch (couleur) {
-	case ROUGE:
+	case RED:
 		printf(KRED);
 		printf("%s", horse.name_case);
 		printf(KNRM);
 		break;
-	case BLEU:
+	case BLUE:
 		printf(KBLU);
 		printf("%s", horse.name_case);
 		printf(KNRM);
 		break;
-	case VERT:
+	case GREEN:
 		printf(KGRN);
 		printf("%s", horse.name_case);
 		printf(KNRM);
 		break;
-	case JAUNE:
+	case YELLOW:
 		printf(KYEL);
 		printf("%s", horse.name_case);
 		printf(KNRM);
@@ -942,37 +944,37 @@ void print_last_case(int couleur, chevaux_t horse) {
 	}
 }
 /*affiche l'etat du joueur (nom, ecurie, couleur)*/
-void affiche_etat_joueur(joueur_t* j) {
+void affiche_etat_joueur(player_t* j) {
 	if (j != NULL) {
-		switch (j->couleur)
+		switch (j->color)
 		{
-		case ROUGE:
+		case RED:
 			printf("Joueur %sROUGE " KNRM, KRED);
-			printf("%s\n", j->nom);
+			printf("%s\n", j->name);
 			printf("Ecurie : ");
 			printf(KRED);
 			print_ecuries(j);
 			printf(KNRM);
 			break;
-		case BLEU:
+		case BLUE:
 			printf("Joueur %sBLEU " KNRM, KBLU);
-			printf("%s\n", j->nom);
+			printf("%s\n", j->name);
 			printf("Ecurie : ");
 			printf(KBLU);
 			print_ecuries(j);
 			printf(KNRM);
 			break;
-		case VERT:
+		case GREEN:
 			printf("Joueur %sVERT " KNRM, KGRN);
-			printf("%s\n", j->nom);
+			printf("%s\n", j->name);
 			printf("Ecurie : ");
 			printf(KGRN);
 			print_ecuries(j);
 			printf(KNRM);
 			break;
-		case JAUNE:
+		case YELLOW:
 			printf("Joueur %sJAUNE " KNRM, KYEL);
-			printf("%s\n", j->nom);
+			printf("%s\n", j->name);
 			printf("Ecurie : ");
 			printf(KYEL);
 			print_ecuries(j);
@@ -984,39 +986,37 @@ void affiche_etat_joueur(joueur_t* j) {
 	}
 }
 /* initialise un joueur */
-joueur_t init_joueur(int couleur, int num_j, int sortie_pos, int is_pnj, char* name) {
+player_t init_joueur(int couleur, int num_j, int out_pos, int is_pnj, char* name) {
 	char num_chevaux[4][4] = { {"C1 "}, {"C2 "}, {"C3 "}, {"C4 "} };
-	joueur_t j;
+	player_t j;
 	j.num_j = num_j;
-	j.nom = (char*)calloc(strlen(name) + 1, sizeof(char));
-	//j.nom = name;
-	strcpy(j.nom, name);
+	j.name = (char*)calloc(strlen(name) + 1, sizeof(char));
+	//j.name = name;
+	strcpy(j.name, name);
 	if (is_pnj == 0) {
 		free(name);
 	}
 	j.ecurie = 4;
 	j.on_board = 0;
-	j.sortie_pos = sortie_pos;
-	j.couleur = couleur;
-	j.jet_des = jet_des();
+	j.out_pos = out_pos;
+	j.color = couleur;
+	j.roll_dice = roll_dice();
 	j.is_pnj = is_pnj;
 	j.is_playing = 0;
 	for (int i = 0; i < 4; i++) {
-		j.chevaux[i] = init_chevaux(couleur, i + 1, num_chevaux[i], num_j);
+		j.horse[i] = init_horses(couleur, i + 1, num_chevaux[i], num_j);
 	}
 	return j;
 }
 /* initialise un cheval */
-chevaux_t init_chevaux(int couleur, int numero, char* name_case, int num_j) {
-	chevaux_t chevaux;
+horse_t init_horses(int couleur, int numero, char* name_case, int num_j) {
+	horse_t chevaux;
 	size_t len_name_case = strlen(name_case);
-	chevaux.couleur = couleur;
+	chevaux.color = couleur;
 	chevaux.numero = numero;
 	chevaux.position = -1;
 	chevaux.num_j = num_j;
 	chevaux.pos_pyrd = 1;
-	//chevaux.name_case = name_case;
-	//chevaux.name_case = (char*)malloc(sizeof(char) * strlen(name_case));
 	strcpy(chevaux.name_case, name_case);
 	return chevaux;
 }
@@ -1039,52 +1039,52 @@ int ingame_choice() {
 	return n;
 }
 /* initialise le plateau de jeu*/
-plateau_t init_plateau(int nb_joueurs) {
-	plateau_t p;
+board_t init_board(int nb_players) {
+	board_t p;
 	char cases[7][4] = { {"1  "}, {"2  "}, {"3  "}, {"4  "}, {"5  "}, {"6  "}, {"X  "} };
 	for (int i = 0; i < LEN_BOARD; i++) {
-		p.board[i] = init_chevaux(VIDE, -1, "#  ", NULL);
+		p.board[i] = init_horses(VIDE, -1, "#  ", NULL);
 	}
-	p.board[R_EC_SORTIE] = init_chevaux(ROUGE, -1, "#  ", NULL);
-	p.board[G_EC_SORTIE] = init_chevaux(VERT, -1, "#  ", NULL);
-	p.board[Y_EC_SORTIE] = init_chevaux(JAUNE, -1, "#  ", NULL);
-	p.board[B_EC_SORTIE] = init_chevaux(BLEU, -1, "#  ", NULL);
+	p.board[R_EC_OUT] = init_horses(RED, -1, "#  ", NULL);
+	p.board[G_EC_OUT] = init_horses(GREEN, -1, "#  ", NULL);
+	p.board[Y_EC_OUT] = init_horses(YELLOW, -1, "#  ", NULL);
+	p.board[B_EC_OUT] = init_horses(BLUE, -1, "#  ", NULL);
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		p.rouge_f[i] = init_chevaux(ROUGE, -1, cases[i], NULL);
-	}
-	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		p.vert_f[i] = init_chevaux(VERT, -1, cases[i], NULL);
+		p.red_final[i] = init_horses(RED, -1, cases[i], NULL);
 	}
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		p.jaune_f[i] = init_chevaux(JAUNE, -1, cases[i], NULL);
+		p.green_final[i] = init_horses(GREEN, -1, cases[i], NULL);
 	}
 	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
-		p.bleu_f[i] = init_chevaux(BLEU, -1, cases[i], NULL);
+		p.yellow_final[i] = init_horses(YELLOW, -1, cases[i], NULL);
 	}
-	p.nb_joueurs = nb_joueurs;
+	for (int i = 0; i < LEN_BOARD_FINAL; i++) {
+		p.blue_final[i] = init_horses(BLUE, -1, cases[i], NULL);
+	}
+	p.nb_players = nb_players;
 	return p;
 }
 /* verifie si le joueur a fait 6 */
-int is_6(joueur_t* j) {
-	return j->jet_des == 6;
+int is_6(player_t* j) {
+	return j->roll_dice == 6;
 }
 /* affiche un nombre n de case du plateau pour simplifie l'affichage des couleurs */
 void print_elems(int n, ...) {
 	va_list ap;
-	chevaux_t board_case;
+	horse_t board_case;
 	va_start(ap, n);
 	while (n--) {
-		board_case = va_arg(ap, chevaux_t);
-		if (board_case.couleur == ROUGE) {
+		board_case = va_arg(ap, horse_t);
+		if (board_case.color == RED) {
 			printf(KRED "%s" KNRM, board_case.name_case);
 		}
-		else if (board_case.couleur == VERT) {
+		else if (board_case.color == GREEN) {
 			printf(KGRN "%s" KNRM, board_case.name_case);
 		}
-		else if (board_case.couleur == BLEU) {
+		else if (board_case.color == BLUE) {
 			printf(KBLU "%s" KNRM, board_case.name_case);
 		}
-		else if (board_case.couleur == JAUNE) {
+		else if (board_case.color == YELLOW) {
 			printf(KYEL "%s" KNRM, board_case.name_case);
 		}
 		else if (board_case.position == -2) {
@@ -1097,7 +1097,7 @@ void print_elems(int n, ...) {
 	va_end(ap);
 }
 /* affiche le plateau de jeu */
-void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
+void show_board(board_t p, player_t* joueur, horse_t horse) {
 	int tmp; //utiliser pour les cases lateral
 	int show_couleur = 0;
 	int start_idx = 0;
@@ -1115,7 +1115,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 		//ligne 6
 		else if (i < 6) {
 			printf("                  ");
-			print_elems(3, p.board[last_idx], p.rouge_f[show_couleur], p.board[start_idx]);
+			print_elems(3, p.board[last_idx], p.red_final[show_couleur], p.board[start_idx]);
 			show_couleur++;
 		}
 		else if (i == 6) {
@@ -1132,7 +1132,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 					last_idx++;
 				}
 				else if (j == 7) {
-					print_elems(1, p.rouge_f[show_couleur]);
+					print_elems(1, p.red_final[show_couleur]);
 				}
 				else {
 					print_elems(1, p.board[start_idx]);
@@ -1156,12 +1156,12 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 					start_idx++;
 				}
 				else if (j < 7) {
-					print_elems(1, p.bleu_f[show_couleur]);
+					print_elems(1, p.blue_final[show_couleur]);
 					show_couleur++;
 				}
 				else if (j == 7) {
 					if (horse.pos_pyrd == 7) {
-						print_last_case(joueur->couleur, horse);
+						print_last_case(joueur->color, horse);
 					}
 					else {
 						printf("X  ");
@@ -1169,7 +1169,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 					show_couleur = 5;
 				}
 				else {
-					print_elems(1, p.jaune_f[show_couleur]);
+					print_elems(1, p.yellow_final[show_couleur]);
 					show_couleur--;
 				}
 			}
@@ -1188,7 +1188,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 					last_idx--;
 				}
 				else if (j == 7) {
-					print_elems(1, p.vert_f[show_couleur]);
+					print_elems(1, p.green_final[show_couleur]);
 					show_couleur--;
 				}
 				else if (j == 14) {
@@ -1212,7 +1212,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 		}
 		else if (i > 8 && i < 14) {
 			printf("                  ");
-			print_elems(3, p.board[last_idx], p.vert_f[show_couleur], p.board[start_idx]);
+			print_elems(3, p.board[last_idx], p.green_final[show_couleur], p.board[start_idx]);
 			show_couleur--;
 		}
 		start_idx++;
@@ -1223,7 +1223,7 @@ void affiche_plateau(plateau_t p, joueur_t* joueur, chevaux_t horse) {
 	affiche_etat_joueur(joueur);
 }
 /* sauvegarde la partie */
-void save(plateau_t p, joueur_t* joueurs) {
+void save(board_t p, player_t* players) {
 	FILE* f;
 	size_t str_size;
 	f = fopen(SAVE_FILENAME, "wb");
@@ -1231,12 +1231,12 @@ void save(plateau_t p, joueur_t* joueurs) {
 		fprintf(stderr, "Impossible d'ecrire le fichier de sauvegarde...");
 		exit(1);
 	}
-	fwrite(&p, sizeof(plateau_t), 1, f);
-	for (int i = 0; i < p.nb_joueurs; i++) {
-		fwrite(&joueurs[i], sizeof(joueur_t), 1, f);
-		str_size = strlen(joueurs[i].nom);
+	fwrite(&p, sizeof(board_t), 1, f);
+	for (int i = 0; i < p.nb_players; i++) {
+		fwrite(&players[i], sizeof(player_t), 1, f);
+		str_size = strlen(players[i].name);
 		fwrite(&str_size, sizeof(size_t), 1, f);
-		fwrite(joueurs[i].nom, sizeof(char), str_size, f);
+		fwrite(players[i].name, sizeof(char), str_size, f);
 	}
 	fclose(f);
 	printf("Sauvegarde effectue !\n");
@@ -1246,27 +1246,27 @@ void save(plateau_t p, joueur_t* joueurs) {
 Game_t load_game() {
 	FILE* f;
 	Game_t game;
-	plateau_t p;
-	joueur_t* joueurs = NULL;
+	board_t p;
+	player_t* players = NULL;
 	size_t str_size;
 	f = fopen(SAVE_FILENAME, "rb");
 	if (f == NULL) {
 		fprintf(stderr, "Fichier introuvable...");
 		exit(1);
 	}
-	fread(&p, sizeof(plateau_t), 1, f);
-	joueurs = (joueur_t*)calloc(p.nb_joueurs, sizeof(joueur_t));
-	for (int i = 0; i < p.nb_joueurs; i++) {
-		fread(&joueurs[i], sizeof(joueur_t), 1, f);
+	fread(&p, sizeof(board_t), 1, f);
+	players = (player_t*)calloc(p.nb_players, sizeof(player_t));
+	for (int i = 0; i < p.nb_players; i++) {
+		fread(&players[i], sizeof(player_t), 1, f);
 		fread(&str_size, sizeof(size_t), 1, f); // je lis la taille de la chaine de caracteres
-		joueurs[i].nom = (char*)malloc(sizeof(char) * str_size + 1);
-		fread(joueurs[i].nom, sizeof(char), str_size, f);
-		if (joueurs[i].nom) {
-			joueurs[i].nom[str_size] = '\0'; // delimite par un \0 sinon depassement du tableau
+		players[i].name = (char*)malloc(sizeof(char) * str_size + 1);
+		fread(players[i].name, sizeof(char), str_size, f);
+		if (players[i].name) {
+			players[i].name[str_size] = '\0'; // delimite par un \0 sinon depassement du tableau
 		}
 	}
 	fclose(f);
-	game.joueurs = joueurs;
+	game.players = players;
 	game.p = p;
 	return game;
 }
