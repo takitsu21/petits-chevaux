@@ -1,9 +1,10 @@
 #ifndef _JEU_H
 #define _JEU_H
-/*evite les warnings de securite de VS*/
-/*#ifdef _MSC_VER
+/*evite les warnings de securite de VS
+https://www.journaldunet.fr/web-tech/developpement/1202787-comment-retirer-les-alertes-de-securite-crt-secure-no-warnings-dans-visual-studio/ */
+#ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
-#endif*/
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -64,10 +65,10 @@ typedef struct player_s {
     int       color; // couleur du joueur
     int       roll_dice; // jet de des
     int       out_pos; // position de sortie de l'ecurie en fonction de la couleur
-    int       on_board; // 1 s'il y a un cheval sur le terrain, 0 sinon
+    int       on_board; // nombre de chevaux sur le plateau, 0 si aucun
     int       is_pnj; // 1 si le joueur est un pnj, 0 sinon
     int       is_playing; // 1 si le joueur joue actuellement, 0 sinon
-    horse_t   tmp_case[4]; // case temporaire pour inverser les cases du plateau
+    horse_t   tmp_case[4]; // cases temporaires pour inverser les cases du plateau
     horse_t   horse[4]; // chevaux du joueur
 } player_t;
 /* structure de mes plateaux pour gerer les chevaux du terrain*/
@@ -85,16 +86,18 @@ typedef struct Game_s {
     board_t p; // plateau
 } Game_t;
 
-int roll_dice();
+int roll_dice(int max);
 char* get_input();
-player_t init_joueur(int color, int num_j, int sortie_pos, int is_pnj, char* name);
-void affiche_etat_joueur(player_t* j);
+player_t init_player(int color, int num_j, int sortie_pos, int is_pnj, char* name);
+void show_state_player(player_t* j);
 int ingame_choice();
 int fsave_exists(const char* file_name);
 int is_collide(board_t p, horse_t horse, int pos);
 void print_ecuries(player_t* j);
 int is_pnj();
-void eat_horse(board_t* p, player_t* current_joueur, horse_t horse, player_t* j_eat, int pos); 
+int is_6(player_t* p);
+int is_valid_input(horse_t* horses_available, int n, int ecurie);
+void eat_horse(board_t* p, player_t* current_player, horse_t horse, player_t* p_eat, int pos); 
 int choose_horse(player_t* j);
 horse_t* horses_in_ecurie(player_t* j);
 int choose_horse_ecurie(player_t* j);
@@ -102,15 +105,15 @@ horse_t* horses_on_board(player_t* j);
 horse_t init_horses(int color, int numero, char* name_case, int num_j);
 void print_elems(int n, ...);
 int start_choice();
-int is_elligible_prd(player_t* j, horse_t horse, int pos);
+int is_elligible_pyrd(player_t* j, horse_t horse, int pos);
 int new_pos_backward(player_t* j, int pos);
 void start_ascii();
 void desalloc_players(player_t* players, int nb_players);
 int get_nb_players();
-void go_back(board_t* p, player_t* current_joueur, horse_t horse, player_t* j_eat, int pos);
-void move_prd(board_t* p, player_t* current_joueur, horse_t horse, player_t* players);
+void go_back(board_t* p, player_t* current_player, horse_t horse, player_t* p_eat, int pos);
+void move_prd(board_t* p, player_t* current_player, horse_t horse, player_t* players);
 player_t* check_who_start(player_t* players, int nb_players);
-void move_horse(board_t* p, horse_t horse, player_t* current_joueur, int pos, horse_t tmp);
+void move_horse(board_t* p, horse_t horse, player_t* current_player, int pos, horse_t tmp);
 void cls();
 void print_last_case(int color, horse_t horse);
 int choice_load();
@@ -119,11 +122,9 @@ void show_board(board_t p, player_t* j, horse_t horse);
 void save(board_t p, player_t* players);
 Game_t load_game();
 board_t init_board(int nb_players);
-int if_6();
 player_t* current_turn(board_t p, player_t* players);
-int is_collide_prd(board_t p, horse_t horse);
-void ia(board_t* p, player_t* current_joueur, player_t* players);
-void sortie_ecurie(board_t* p, player_t* j, player_t* j_eat);
+void ia(board_t* p, player_t* current_player, player_t* players);
+void sortie_ecurie(board_t* p, player_t* j, player_t* p_eat);
 void Game();
 
 #endif
