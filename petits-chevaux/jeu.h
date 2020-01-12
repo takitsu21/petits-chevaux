@@ -30,21 +30,21 @@ https://www.journaldunet.fr/web-tech/developpement/1202787-comment-retirer-les-a
 // representation des couleurs des chevaux
 enum horse_colors {
     VIDE, // case vide
-    RED,
-    BLUE,
-    GREEN,
-    YELLOW,
+    RED, // couleur rouge
+    BLUE, // couleur bleu
+    GREEN, // couleur verte
+    YELLOW, // couleur jaune
 };
 // mode de jeu pendant la partie
 enum ingame_mode {
-    ROLL_DICE = 1,
-    SAVE
+    ROLL_DICE = 1, // cas choix 1 pour lancer les des
+    SAVE // cas choix 2 sauvegarder
 };
 // mode jeu
 enum mode {
-    NEW_GAME = 1,
-    RULES,
-    QUIT
+    NEW_GAME = 1, // choix 1 nouvelle partie
+    RULES, // choix 2 afficher les regles
+    QUIT // choix 3 quitter
 };
 
 /*position des chevaux*/
@@ -81,10 +81,10 @@ typedef struct board_s {
     int     nb_players; // nombre de joueurs de la partie
 } board_t;
 /* sert a sauvegarder ma partie */
-typedef struct Game_s {
+typedef struct game_s {
     player_t* players; // tout les joueurs
     board_t p; // plateau
-} Game_t;
+} game_t;
 
 int roll_dice(int max);
 char* get_input();
@@ -95,7 +95,8 @@ int fsave_exists(const char* file_name);
 int is_collide(board_t p, horse_t horse, int pos);
 void print_ecuries(player_t* j);
 int is_pnj();
-int is_6(player_t* p);
+int random_choice_pnj(player_t* j, horse_t* horses, int max);
+int is_6(player_t* j);
 int is_valid_input(horse_t* horses_available, int n, int ecurie);
 void eat_horse(board_t* p, player_t* current_player, horse_t horse, player_t* p_eat, int pos); 
 int choose_horse(player_t* j);
@@ -120,7 +121,7 @@ int choice_load();
 int choice_replay();
 void show_board(board_t p, player_t* j, horse_t horse);
 void save(board_t p, player_t* players);
-Game_t load_game();
+game_t load_game();
 board_t init_board(int nb_players);
 player_t* current_turn(board_t p, player_t* players);
 void ia(board_t* p, player_t* current_player, player_t* players);

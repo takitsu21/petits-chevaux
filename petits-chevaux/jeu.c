@@ -189,6 +189,7 @@ int choose_horse_ecurie(player_t* j) {
 	free(horses_available);
 	return n - 1;
 }
+/* tire un choix aleatoire pour le PNJ */
 int random_choice_pnj(player_t* j, horse_t* horses, int max) {
 	int r_choice;
 	srand((unsigned int)time(NULL));
@@ -201,6 +202,7 @@ int random_choice_pnj(player_t* j, horse_t* horses, int max) {
 		}
 	}
 }
+/* sort un cheval de l'ecurie */
 void sortie_ecurie(board_t* p, player_t* j, player_t* players) {
 	horse_t* horse;
 	int pos = j->out_pos;
@@ -451,7 +453,7 @@ void move_prd(board_t* p, player_t* current_player, horse_t horse, player_t* pla
 		}
 	}
 }
-/* gere les IAs du jeu */
+/* gere les PNJ du jeu */
 void ia(board_t* p, player_t* current_player, player_t* players) {
 	horse_t horse;
 	int next_pos;
@@ -592,7 +594,7 @@ void Game() {
 	horse_t horse; // cheval choisi
 	player_t* players = NULL; // tout les joueurs de la partie
 	player_t* tour = NULL; // tour actuel
-	Game_t game; // toutes les structures reunis dans une seule
+	game_t game; // toutes les structures reunis dans une seule
 	int new_pos_back; // position quand le cheval retourne en arriere
 	char bots_name[4][10] = { {"HAL-9000"}, {"T-1000"}, {"R2D2"}, {"T-800"} }; // nom des 4 PNJ
 	int out_posis[4] = { R_EC_OUT, B_EC_OUT, G_EC_OUT, Y_EC_OUT }; // position de sortie des ecuries
@@ -1017,8 +1019,8 @@ board_t init_board(int nb_players) {
 	return p;
 }
 /* verifie si le joueur a fait 6 */
-int is_6(player_t* p) {
-	return p->roll_dice == 6;
+int is_6(player_t* j) {
+	return j->roll_dice == 6;
 }
 /* affiche un nombre n de case du plateau pour simplifie l'affichage des couleurs */
 void print_elems(int n, ...) {
@@ -1195,9 +1197,9 @@ void save(board_t p, player_t* players) {
 	system("pause");
 }
 /* charge une partie */
-Game_t load_game() {
+game_t load_game() {
 	FILE* f;
-	Game_t game;
+	game_t game;
 	board_t p;
 	player_t* players = NULL;
 	size_t str_size;
